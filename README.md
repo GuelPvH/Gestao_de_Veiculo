@@ -2,7 +2,7 @@
 
 Olá, desenvolvedor! Seja muito bem-vindo ao nosso projeto. 
 
-Se você está chegando agora (seja você um júnior dando os primeiros passos ou alguém buscando entender a arquitetura), preparei este guia com o máximo de detalhes possível. A ideia é que você consiga rodar a aplicação sem dores de cabeça, de forma clara e passo a passo.
+Se você está chegando agora, preparei este guia com o máximo de detalhes possível. A ideia é que você consiga rodar a aplicação sem dores de cabeça, de forma clara e passo a passo.
 
 Existem duas formas principais de rodar este projeto na sua máquina:
 1. **O jeito moderno (via Docker/Sail)** - Fortemente recomendado, pois isola tudo e evita conflitos.
