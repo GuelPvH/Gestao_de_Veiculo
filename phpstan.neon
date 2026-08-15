@@ -1,0 +1,69 @@
+# =============================================================================
+# Larastan / PHPStan
+#
+# Projeto novo: nível 8 e SEM baseline. Baseline é dívida registrada para
+# código legado — nunca lixeira para erro recém-escrito.
+#
+# Os parâmetros `checkMissingIterableValueType` e
+# `checkGenericClassInNonGenericObjectType` NÃO aparecem aqui: foram removidos
+# no PHPStan 2.x (exigido pelo Larastan 3.x), onde as verificações passaram a
+# fazer parte dos próprios níveis. Mantê-los abortaria a análise.
+# =============================================================================
+
+includes:
+    - vendor/larastan/larastan/extension.neon
+
+    # Sem estas duas o PHPStan não entende a API dinâmica do Pest e reporta
+    # dezenas de "undefined method" nos testes — falso positivo puro, que
+    # tentaria ser resolvido baixando o nível da análise.
+    - vendor/pestphp/pest/extension.neon
+    - vendor/pestphp/pest/phpstan-pest-extension.neon
+
+parameters:
+    level: 8
+
+    paths:
+        - app
+        - config
+        - database
+        - routes
+        - tests
+
+    # O cache fica DENTRO do container, fora do bind mount. São ~1200 arquivos
+    # pequenos: no bind mount do Docker Desktop (ainda mais em pasta
+    # sincronizada como OneDrive/Dropbox) a análise passa de minutos.
+    tmpDir: /tmp/phpstan
+
+    # Um ignore que deixou de ser necessário precisa aparecer como erro, senão
+    # a configuração acumula regra morta. Isso é o que impede a lista abaixo
+    # de virar lixeira: se o Pest passar a publicar uma extensão que resolva
+    # o problema, estas entradas falham a análise e são removidas.
+    reportUnmatchedIgnoredErrors: true
+
+    # -------------------------------------------------------------------------
+    # Falsos positivos do Pest — NÃO são bugs mascarados.
+    #
+    # O Pest liga o `$this` dos closures de teste ao TestCase em tempo de
+    # execução (`pest()->extend(TestCase::class)->in(...)`, tests/Pest.php);
+    # estaticamente o PHPStan só enxerga o TestCall devolvido por it()/test().
+    # O mesmo vale para expectations customizadas registradas via
+    # `expect()->extend(...)`. O Pest publica apenas as duas extensões já
+    # incluídas acima, que não cobrem estes casos.
+    #
+    # Os ignores são presos a `tests/*` e às classes exatas do Pest: nada em
+    # app/, config/, database/ ou routes/ é afrouxado, e qualquer outro tipo
+    # de erro dentro de tests/ continua sendo reportado.
+    # -------------------------------------------------------------------------
+    ignoreErrors:
+        -
+            identifier: method.notFound
+            message: '#^Call to an undefined method Pest\\PendingCalls\\TestCall::#'
+            path: tests/*
+        -
+            identifier: method.notFound
+            message: '#^Call to an undefined method Pest\\(Mixins\\)?Expectation<.*>::#'
+            path: tests/*
+        -
+            identifier: property.notFound
+            message: '#^Access to an undefined property Pest\\(Mixins\\)?Expectation<.*>::\$#'
+            path: tests/*

@@ -1,0 +1,66 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Copia .env.example para .env
+        run: cp .env.example .env
+
+      - name: Gera credenciais de CI no .env
+        run: |
+          # Credenciais efêmeras para o banco do CI — não são segredos reais.
+          echo "DB_PASSWORD=ci-test-password" >> .env
+          echo "MYSQL_ROOT_PASSWORD=ci-root-password" >> .env
+          echo "APP_KEY=base64:$(openssl rand -base64 32)" >> .env
+
+      - name: Build imagens
+        run: docker compose build app
+
+      - name: Sobe dependências (mysql, redis)
+        run: docker compose up -d mysql redis
+
+      - name: Aguarda MySQL saudável
+        run: |
+          timeout 90s bash -c '
+            until [ "$(docker compose ps mysql --format json | jq -r .Health)" = "healthy" ]; do
+              sleep 2
+            done'
+
+      - name: Instala dependências PHP
+        run: docker compose run --rm app composer install --no-interaction --prefer-dist
+
+      - name: Instala dependências JS
+        run: docker compose run --rm vite npm ci
+
+      - name: Auditoria de dependências
+        run: |
+          docker compose run --rm app composer audit
+          docker compose run --rm vite npm audit --audit-level=high || true
+
+      - name: Pint (verifica, não corrige)
+        run: docker compose run --rm app ./vendor/bin/pint --test
+
+      - name: Rector (dry-run)
+        run: docker compose run --rm app ./vendor/bin/rector --dry-run
+
+      - name: Larastan (PHPStan)
+        run: docker compose run --rm app ./vendor/bin/phpstan analyse --memory-limit=1G
+
+      - name: Testes (Pest)
+        run: docker compose run --rm app ./vendor/bin/pest --parallel
+
+      - name: Build frontend
+        run: docker compose run --rm vite npm run build
+
+      - name: Cleanup
+        if: always()
+        run: docker compose down --volumes

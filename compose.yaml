@@ -1,0 +1,263 @@
+# =============================================================================
+# Ambiente de desenvolvimento 100% containerizado.
+#
+# Sem a chave `version:` — obsoleta no Compose v2 e gera warning.
+# Toda porta publicada vem do `.env`: conflito se resolve lá, nunca aqui.
+# Nenhuma credencial literal neste arquivo.
+# =============================================================================
+
+name: gestao-veiculo-ppw
+
+# -----------------------------------------------------------------------------
+# Blocos reutilizáveis: app, queue e scheduler compartilham imagem e montagens.
+# -----------------------------------------------------------------------------
+x-app-build: &app-build
+  context: .
+  dockerfile: docker/php/Dockerfile
+  target: dev
+  args:
+    PHP_VERSION: ${PHP_VERSION:-8.4}
+    UID: ${APP_UID:-82}
+    GID: ${APP_GID:-82}
+
+x-app-volumes: &app-volumes
+  # O código vive no bind mount. `vendor` é volume nomeado: em Docker Desktop
+  # o bind de ~30k arquivos pequenos é lento demais (§9.1).
+  - .:/var/www/html
+  - vendor:/var/www/html/vendor
+
+x-app-env: &app-env
+  XDEBUG_MODE: ${XDEBUG_MODE:-off}
+  PHP_IDE_CONFIG: serverName=${COMPOSE_PROJECT_NAME:-gestao-veiculo-ppw}
+
+x-app-depends: &app-depends
+  mysql:
+    condition: service_healthy
+  redis:
+    condition: service_healthy
+
+services:
+  # ---------------------------------------------------------------------------
+  # PHP-FPM — roda a aplicação. Não publica porta: só o nginx fala com ele.
+  # ---------------------------------------------------------------------------
+  app:
+    build: *app-build
+    image: ${COMPOSE_PROJECT_NAME:-gestao-veiculo-ppw}-app:dev
+    restart: unless-stopped
+    environment: *app-env
+    volumes: *app-volumes
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on: *app-depends
+    networks: [net]
+    healthcheck:
+      # PHP-FPM não tem endpoint HTTP: o check fala FastCGI direto (§6.4).
+      test: ["CMD", "php-fpm-healthcheck"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # ---------------------------------------------------------------------------
+  # Nginx — precisa do MESMO bind mount do código: ele resolve o arquivo
+  # estático e envia SCRIPT_FILENAME ao FPM. Sem isso, tudo vira 404.
+  # ---------------------------------------------------------------------------
+  nginx:
+    build:
+      context: .
+      dockerfile: docker/nginx/Dockerfile
+    image: ${COMPOSE_PROJECT_NAME:-gestao-veiculo-ppw}-nginx:dev
+    restart: unless-stopped
+    ports:
+      - "${APP_PORT:-8000}:80"
+    volumes:
+      - .:/var/www/html:ro
+    depends_on:
+      app:
+        condition: service_healthy
+    networks: [net]
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1/nginx-health"]
+      interval: 15s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+
+  # ---------------------------------------------------------------------------
+  # Vite — dev server com HMR. Entra em crash-loop enquanto node_modules não
+  # existe: por isso toda instalação de frontend usa `run --rm vite`, não `exec`.
+  # ---------------------------------------------------------------------------
+  vite:
+    build:
+      context: .
+      dockerfile: docker/node/Dockerfile
+      args:
+        NODE_VERSION: ${NODE_VERSION:-24}
+        # MESMO uid/gid do serviço `app`, e não um par próprio: os dois
+        # containers gravam no mesmo bind mount. Com identidades diferentes,
+        # o Vite não consegue criar `public/hot` (dono é o usuário do PHP) e
+        # entra em crash-loop com EACCES.
+        UID: ${APP_UID:-82}
+        GID: ${APP_GID:-82}
+    image: ${COMPOSE_PROJECT_NAME:-gestao-veiculo-ppw}-node:dev
+    restart: unless-stopped
+    environment:
+      VITE_PORT: ${VITE_PORT:-5175}
+      APP_PORT: ${APP_PORT:-8000}
+    ports:
+      # Porta igual no host e no container: a URL gravada em `public/hot`
+      # precisa ser alcançável pelo navegador do host.
+      - "127.0.0.1:${VITE_PORT:-5175}:${VITE_PORT:-5175}"
+    volumes:
+      - .:/var/www/html
+      - node_modules:/var/www/html/node_modules
+    networks: [net]
+
+  # ---------------------------------------------------------------------------
+  # Worker da fila
+  # ---------------------------------------------------------------------------
+  queue:
+    build: *app-build
+    image: ${COMPOSE_PROJECT_NAME:-gestao-veiculo-ppw}-app:dev
+    restart: unless-stopped
+    environment: *app-env
+    volumes: *app-volumes
+    command: ["php", "artisan", "horizon"]
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      app:
+        condition: service_healthy
+    networks: [net]
+    healthcheck:
+      test: ["CMD-SHELL", "pgrep -f '[h]orizon' > /dev/null"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+  # ---------------------------------------------------------------------------
+  # Scheduler — `schedule:work` substitui a entrada de cron no host.
+  # ---------------------------------------------------------------------------
+  scheduler:
+    build: *app-build
+    image: ${COMPOSE_PROJECT_NAME:-gestao-veiculo-ppw}-app:dev
+    restart: unless-stopped
+    environment: *app-env
+    volumes: *app-volumes
+    command: ["php", "artisan", "schedule:work"]
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      app:
+        condition: service_healthy
+    networks: [net]
+    healthcheck:
+      test: ["CMD-SHELL", "pgrep -f '[s]chedule:work' > /dev/null"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+  # ---------------------------------------------------------------------------
+  # MySQL — porta 3306 NÃO é publicada: a app fala `mysql:3306` pela rede
+  # interna e o acesso humano é pelo phpMyAdmin. Volume nomeado: recriar o
+  # container não pode apagar dados.
+  # ---------------------------------------------------------------------------
+  mysql:
+    build:
+      context: .
+      dockerfile: docker/mysql/Dockerfile
+    image: ${COMPOSE_PROJECT_NAME:-gestao-veiculo-ppw}-mysql:8.4
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?defina MYSQL_ROOT_PASSWORD no .env}
+      MYSQL_DATABASE: ${DB_DATABASE:-gestao_veiculo}
+      MYSQL_USER: ${DB_USERNAME:-gestao}
+      MYSQL_PASSWORD: ${DB_PASSWORD:?defina DB_PASSWORD no .env}
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks: [net]
+    healthcheck:
+      # `mysqladmin ping` responde OK durante o bootstrap do entrypoint, antes
+      # do banco estar utilizável. Aqui a query é real, contra o database da app.
+      test:
+        - CMD-SHELL
+        - mysql -h 127.0.0.1 -u"$$MYSQL_USER" -p"$$MYSQL_PASSWORD" -D "$$MYSQL_DATABASE" -e 'SELECT 1' > /dev/null 2>&1
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 40s
+
+  # ---------------------------------------------------------------------------
+  # Redis — cache, sessão e fila.
+  # ---------------------------------------------------------------------------
+  redis:
+    image: redis:8-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes", "--save", "60", "1"]
+    volumes:
+      - redis_data:/data
+    networks: [net]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+
+  # ---------------------------------------------------------------------------
+  # Ferramentas administrativas — só sobem com o profile `tools`.
+  # Publicadas em 127.0.0.1: em 0.0.0.0 seu banco fica exposto à rede local.
+  # ---------------------------------------------------------------------------
+  phpmyadmin:
+    image: phpmyadmin:5.2-apache
+    restart: unless-stopped
+    profiles: [tools]
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+      UPLOAD_LIMIT: 64M
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?defina MYSQL_ROOT_PASSWORD no .env}
+    ports:
+      - "127.0.0.1:${PHPMYADMIN_PORT:-8082}:80"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks: [net]
+
+  mailpit:
+    image: axllent/mailpit:v1.30.6
+    restart: unless-stopped
+    profiles: [tools]
+    environment:
+      MP_DATABASE: /data/mailpit.db
+      MP_MAX_MESSAGES: 500
+      MP_SMTP_AUTH_ACCEPT_ANY: 1
+      MP_SMTP_AUTH_ALLOW_INSECURE: 1
+    volumes:
+      - mailpit_data:/data
+    ports:
+      - "127.0.0.1:${MAILPIT_PORT:-8026}:8025"
+    networks: [net]
+    healthcheck:
+      test: ["CMD", "/mailpit", "readyz"]
+      interval: 15s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+
+networks:
+  net:
+    driver: bridge
+
+volumes:
+  mysql_data:
+  redis_data:
+  mailpit_data:
+  vendor:
+  node_modules:

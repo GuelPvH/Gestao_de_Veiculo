@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
+         bootstrap="vendor/autoload.php"
+         colors="true"
+>
+    <testsuites>
+        <testsuite name="Unit">
+            <directory>tests/Unit</directory>
+        </testsuite>
+        <testsuite name="Feature">
+            <directory>tests/Feature</directory>
+        </testsuite>
+        <testsuite name="Architecture">
+            <directory>tests/Architecture</directory>
+        </testsuite>
+    </testsuites>
+    <source>
+        <include>
+            <directory>app</directory>
+        </include>
+    </source>
+    <php>
+        <env name="APP_ENV" value="testing"/>
+        <env name="APP_MAINTENANCE_DRIVER" value="file"/>
+
+        <!-- 4 rounds em vez de 12: corta segundos de cada teste que cria
+             usuario, sem afetar o que esta sendo verificado. -->
+        <env name="BCRYPT_ROUNDS" value="4"/>
+
+        <!-- A suite NUNCA toca o banco de desenvolvimento. SQLite em memoria e
+             rapido e isolado. Se o projeto passar a depender de recurso
+             especifico do MySQL (coluna JSON, fulltext, ENUM), o SQLite mente:
+             nesse caso aponte para o database `<DB_DATABASE>_testing`, ja
+             criado pelo init do MySQL (docker/mysql/init/01-testing-db.sh). -->
+        <env name="DB_CONNECTION" value="sqlite"/>
+        <env name="DB_DATABASE" value=":memory:"/>
+        <env name="DB_URL" value=""/>
+
+        <env name="BROADCAST_CONNECTION" value="null"/>
+        <env name="CACHE_STORE" value="array"/>
+        <env name="QUEUE_CONNECTION" value="sync"/>
+        <env name="SESSION_DRIVER" value="array"/>
+        <env name="MAIL_MAILER" value="array"/>
+
+        <!-- Debugbar coletando dados durante a suite deixa os testes lentos
+             sem nenhum beneficio. -->
+        <env name="DEBUGBAR_ENABLED" value="false"/>
+
+        <env name="PULSE_ENABLED" value="false"/>
+        <env name="TELESCOPE_ENABLED" value="false"/>
+        <env name="NIGHTWATCH_ENABLED" value="false"/>
+        <env name="HORIZON_ENABLED" value="false"/>
+        <env name="SENTRY_LARAVEL_DSN" value=""/>
+    </php>
+</phpunit>
