@@ -82,7 +82,7 @@
         "actions": [{
             "action": "CaptainHook.Message.MustMatchRegex",
             "options": {
-                "regex": "#^(feat|fix|docs|style|refactor|perf|test|chore|ci|build|revert)(\\(.+\\))?: .{1,72}$#",
+                "regex": "#^(feat|fix|docs|style|refactor|perf|test|chore|ci|build|revert)(\\(.+\\))?: .{1,72}(\\R|$)#",
                 "error": "Use Conventional Commits: tipo(escopo): descrição"
             }
         }]
