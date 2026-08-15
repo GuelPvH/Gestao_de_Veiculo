@@ -29,13 +29,13 @@ final class VehicleApiController extends Controller
             'plate' => ['required', 'string', 'max:10', 'unique:vehicles,plate'],
             'brand' => ['required', 'string', 'max:50'],
             'model' => ['required', 'string', 'max:50'],
-            'year' => ['required', 'integer', 'min:1900', 'max:' . (date('Y') + 1)],
+            'year' => ['required', 'integer', 'min:1900', 'max:'.(date('Y') + 1)],
             'status' => ['sometimes', 'string', 'in:disponivel,em_uso,manutencao'],
         ]);
 
         $vehicle = Vehicle::create($validated);
 
-        return (new VehicleResource($vehicle))
+        return new VehicleResource($vehicle)
             ->response()
             ->setStatusCode(201);
     }
@@ -43,10 +43,10 @@ final class VehicleApiController extends Controller
     public function update(Request $request, Vehicle $vehicle): VehicleResource
     {
         $validated = $request->validate([
-            'plate' => ['sometimes', 'string', 'max:10', 'unique:vehicles,plate,' . $vehicle->id],
+            'plate' => ['sometimes', 'string', 'max:10', 'unique:vehicles,plate,'.$vehicle->id],
             'brand' => ['sometimes', 'string', 'max:50'],
             'model' => ['sometimes', 'string', 'max:50'],
-            'year' => ['sometimes', 'integer', 'min:1900', 'max:' . (date('Y') + 1)],
+            'year' => ['sometimes', 'integer', 'min:1900', 'max:'.(date('Y') + 1)],
             'status' => ['sometimes', 'string', 'in:disponivel,em_uso,manutencao'],
         ]);
 

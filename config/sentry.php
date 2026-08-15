@@ -1,5 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
+use App\Support\SentryBeforeSend;
+use Illuminate\Auth\AuthenticationException;
+use Illuminate\Validation\ValidationException;
+
 /**
  * Sentry Laravel SDK configuration file.
  *
@@ -55,14 +61,11 @@ return [
 
     // @see: https://docs.sentry.io/platforms/php/guides/laravel/configuration/options/#ignore_exceptions
     'ignore_exceptions' => [
-        \Illuminate\Auth\AuthenticationException::class,
-        \Illuminate\Validation\ValidationException::class,
+        AuthenticationException::class,
+        ValidationException::class,
     ],
 
-    // Nunca envie senha, token ou cookie de sessão pro Sentry.
-    'before_send' => function (\Sentry\Event $event): ?\Sentry\Event {
-        return $event;
-    },
+    'before_send' => [SentryBeforeSend::class, 'handle'],
 
     // @see: https://docs.sentry.io/platforms/php/guides/laravel/configuration/options/#ignore_transactions
     'ignore_transactions' => [

@@ -28,14 +28,10 @@ class AppServiceProvider extends ServiceProvider
     {
         Gate::define('viewPulse', fn (User $user): bool => $user->is_admin);
 
-        RateLimiter::for('api', function (Request $request) {
-            return $request->user()
-                ? Limit::perMinute(120)->by($request->user()->id)
-                : Limit::perMinute(20)->by($request->ip());
-        });
+        RateLimiter::for('api', fn (Request $request) => $request->user()
+            ? Limit::perMinute(120)->by($request->user()->id)
+            : Limit::perMinute(20)->by($request->ip()));
 
-        RateLimiter::for('login', function (Request $request) {
-            return Limit::perMinute(5)->by($request->ip() . '|' . $request->input('email'));
-        });
+        RateLimiter::for('login', fn (Request $request) => Limit::perMinute(5)->by($request->ip().'|'.$request->input('email')));
     }
 }

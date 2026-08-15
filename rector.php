@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Rector\Config\RectorConfig;
+use Rector\Php81\Rector\Array_\ArrayToFirstClassCallableRector;
 use RectorLaravel\Rector\StaticCall\DispatchToHelperFunctionsRector;
 use RectorLaravel\Set\LaravelSetList;
 
@@ -39,6 +40,14 @@ return RectorConfig::configure()
         // Trocar por `dispatch(new Job())` não corrige nada e ainda esconde
         // o nome do job atrás de um helper global.
         DispatchToHelperFunctionsRector::class,
+
+        // `config/sentry.php` precisa do callable como array `[classe, método]`
+        // — `config:cache` serializa a config com `var_export`, que não sabe
+        // representar uma Closure, e um callable de primeira classe
+        // (`Classe::metodo(...)`) É uma Closure em tempo de execução.
+        ArrayToFirstClassCallableRector::class => [
+            __DIR__.'/config/sentry.php',
+        ],
     ])
     // PHP 8.4 — a versão vem do `require.php` do composer.json.
     ->withPhpSets()

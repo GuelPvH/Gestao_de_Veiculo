@@ -67,3 +67,26 @@ parameters:
             identifier: property.notFound
             message: '#^Access to an undefined property Pest\\(Mixins\\)?Expectation<.*>::\$#'
             path: tests/*
+
+        # ---------------------------------------------------------------------
+        # Stubs publicados por pacote (laravel/pulse, laravel/horizon,
+        # laravel/sanctum) via `vendor:publish` — não são código nosso, e o
+        # próprio pacote os regenera de forma idêntica a cada novo publish.
+        # `env()` sem cast explícito fora do padrão do projeto é intencional
+        # aqui: mexer no arquivo divergiria do stub oficial sem necessidade.
+        # ---------------------------------------------------------------------
+        -
+            identifier: argument.type
+            message: '#Parameter \#2 \$string of function explode expects string, bool\|string given\.#'
+            path: config/pulse.php
+        -
+            identifier: argument.type
+            message: '#Parameter \#2 \$string of function explode expects string, bool\|string given\.#'
+            path: config/sanctum.php
+        -
+            identifier: argument.type
+            message: '#Parameter \#1 \$title of static method Illuminate\\Support\\Str::slug\(\) expects string, bool\|string given\.#'
+            path: config/horizon.php
+        -
+            identifier: match.unhandled
+            path: database/migrations/*_create_pulse_tables.php

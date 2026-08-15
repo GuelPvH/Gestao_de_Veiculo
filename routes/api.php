@@ -19,14 +19,20 @@ use Illuminate\Support\Facades\Route;
 */
 
 // Rotas públicas de leitura
+//
+// `names('api.vehicles')` evita colisão com a rota web `vehicles.index`
+// (o nome padrão do apiResource seria o mesmo, e `route:cache` recusa
+// duas rotas com o mesmo nome).
 Route::apiResource('vehicles', VehicleApiController::class)
-    ->only(['index', 'show']);
+    ->only(['index', 'show'])
+    ->names('api.vehicles');
 
 // Rotas que exigem autenticação (Sanctum)
 Route::middleware('auth:sanctum')->group(function (): void {
-    Route::get('/user', fn (Request $request) => new UserResource($request->user()))
+    Route::get('/user', fn (Request $request): UserResource => new UserResource($request->user()))
         ->name('api.user');
 
     Route::apiResource('vehicles', VehicleApiController::class)
-        ->only(['store', 'update', 'destroy']);
+        ->only(['store', 'update', 'destroy'])
+        ->names('api.vehicles');
 });

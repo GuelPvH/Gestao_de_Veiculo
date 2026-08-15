@@ -44,6 +44,9 @@ arch('models so aparecem no dominio, nunca direto na view')
         'App\Actions',
         'App\Http',
         'App\Models',
+        // Gates de autorização (Pulse, Horizon) tipam o argumento contra o
+        // model User — não é acesso direto na view, é wiring de bootstrap.
+        'App\Providers',
         'App\Policies',
         'Database',
         'Tests',
