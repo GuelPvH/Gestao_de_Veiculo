@@ -6,9 +6,36 @@
 # =============================================================================
 
 ARG PHP_VERSION=8.4
+ARG NODE_VERSION=24
 
 # Composer vem da imagem oficial, não de script baixado em runtime.
 FROM composer:2 AS composer_bin
+
+
+# -----------------------------------------------------------------------------
+# assets — compila CSS/JS para a imagem de produção
+#
+# Sem este stage a imagem `prod` sobe SEM front-end: o `.dockerignore` exclui
+# `public/build/` (correto — artefato não entra no contexto de build), e nada
+# mais o geraria. Em runtime o `@vite(...)` do Blade não acharia o manifest e
+# lançaria ViteManifestNotFoundException em toda página.
+#
+# Compilar aqui, e não no host, mantém o Container First: o build não depende
+# de Node instalado na máquina de quem publica.
+# -----------------------------------------------------------------------------
+FROM node:${NODE_VERSION}-alpine AS assets
+
+WORKDIR /app
+
+# `npm ci` exige o lockfile e instala exatamente as versões travadas.
+COPY package.json package-lock.json ./
+RUN npm ci --no-audit --no-fund
+
+# Só o que o Vite precisa ler para compilar.
+COPY vite.config.js ./
+COPY resources ./resources
+
+RUN npm run build
 
 
 # -----------------------------------------------------------------------------
@@ -124,6 +151,11 @@ RUN composer install --no-dev --no-interaction --no-progress --prefer-dist \
         --no-autoloader --no-scripts
 
 COPY --chown=www-data:www-data . .
+
+# CSS/JS compilados no stage `assets`. Precisa vir ANTES do `view:cache`:
+# o Blade resolve o `@vite(...)` contra o manifest, e sem ele a compilação
+# das views falharia — ou pior, passaria e quebraria só em runtime.
+COPY --from=assets --chown=www-data:www-data /app/public/build ./public/build
 
 RUN set -eux; \
     composer dump-autoload --no-dev --optimize --classmap-authoritative; \

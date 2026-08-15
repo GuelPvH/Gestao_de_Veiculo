@@ -723,11 +723,40 @@ Dispara em pull request e em push para `master`/`main`. Os passos:
 > passando quando o local falha, ou o contrário — e a confiança no pipeline
 > desmoronaria.
 
+O pipeline tem **três jobs**, e a divisão é proposital:
+
+| Job | O que garante |
+|---|---|
+| **quality** | Pint, Rector (dry-run), PHPStan nível 8, Pest, auditoria de dependências e auditoria Container First |
+| **smoke** | Sobe a **stack completa** e bate nas rotas reais |
+| **producao** | Constrói o stage `prod` e inspeciona a imagem resultante |
+
+> **Por que `smoke` existe separado.** A suíte roda em SQLite em memória e nunca
+> toca nginx, FPM, MySQL ou Redis de verdade. O bug de 502 causado pelo nginx
+> cachear o IP do container passou por 32 testes verdes — só apareceu ao subir a
+> stack. O smoke test cobre exatamente essa lacuna: verifica as rotas, confirma
+> que `/pulse` **nega** acesso anônimo, derruba o MySQL de propósito para exigir
+> o 503 do `/up/deep`, e estoura o rate limit para exigir o 429.
+
+> **Por que `producao` existe separado.** O stage `prod` roda `config:cache` e
+> `route:cache` no build, e cada um é um portão que os testes não atravessam:
+> closure na configuração quebra o primeiro, nome de rota duplicado quebra o
+> segundo — os dois já aconteceram aqui. O job ainda inspeciona a imagem pronta
+> para garantir que ela tem o manifest do Vite e **não** tem `.env`, Node ou
+> dependência de desenvolvimento.
+
 ### Dependabot — `.github/dependabot.yml`
 
 Abre PR semanal para Composer, npm, **os quatro Dockerfiles** e as próprias
 GitHub Actions. Pacotes Laravel e ferramentas de qualidade vêm agrupados, para não
 gerar dez PRs isolados.
+
+### Arquivos de colaboração
+
+`CONTRIBUTING.md` (fluxo de trabalho), `SECURITY.md` (reporte de
+vulnerabilidade), `LICENSE` (MIT, coerente com o `composer.json`),
+`.github/PULL_REQUEST_TEMPLATE.md` e `.github/ISSUE_TEMPLATE/` (bug e
+funcionalidade).
 
 ---
 
@@ -744,6 +773,8 @@ gerar dez PRs isolados.
 | **`container_name` com prefixo escolhido pelo usuário** | O nome gerado pelo Compose (`gestao-veiculo-ppw-app-1`) é longo demais para digitar num `docker exec`. O prefixo vem de `CONTAINER_PREFIX` no `.env` e é **livre**; sem ele, cai em `COMPOSE_PROJECT_NAME` e depois no nome da pasta — o padrão do Docker. Custo: nome de container é único por host, então duas cópias simultâneas exigem prefixos diferentes. |
 | **`resolver` DNS no nginx** | Com hostname literal, o nginx cacheia o IP no boot e devolve 502 depois de recriar o `app`. Com variável + resolver, ele re-resolve a cada request. |
 | **`before_send` como classe, não closure** | `config:cache` usa `var_export`, que não serializa closure — quebrava o build de produção. |
+| **Stage `assets` compilando o front-end na imagem** | O `.dockerignore` exclui `public/build/` do contexto (correto: artefato não é fonte), então a imagem `prod` subia **sem CSS/JS** e o `@vite()` lançava `ViteManifestNotFoundException` em toda página. Compilar num stage Node e copiar só o resultado mantém o Container First e deixa Node fora da imagem final. |
+| **`stop_grace_period: 60s` no worker e no scheduler** | O padrão do Docker é SIGKILL 10s após o SIGTERM. O Horizon usa o SIGTERM para terminar o job atual antes de sair; com 10s, um job real seria morto no meio e perdido. |
 | **Rotas de API com prefixo `api.vehicles.*`** | O nome padrão colidia com a rota web `vehicles.index` e fazia `route:cache` falhar. |
 | **`APP_TIMEZONE` removido do `.env`** | O `config/app.php` do Laravel 13 fixa `'UTC'` e **não lê** essa variável. Mantê-la faria o `.env` mentir sobre o fuso da aplicação. |
 | **`compose.override.yaml` não versionado** | O propósito dele é customização pessoal do desenvolvedor. |

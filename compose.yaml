@@ -127,6 +127,11 @@ services:
     environment: *app-env
     volumes: *app-volumes
     command: ["php", "artisan", "horizon"]
+    # O Horizon trata SIGTERM como "termine o job atual e saia". O padrão do
+    # Docker é matar 10s depois do SIGTERM — tempo curto demais para um job
+    # real, que seria SIGKILLado no meio e perdido. 60s dá margem para o job
+    # em andamento fechar antes do desligamento.
+    stop_grace_period: 60s
     depends_on:
       mysql:
         condition: service_healthy
@@ -153,6 +158,9 @@ services:
     environment: *app-env
     volumes: *app-volumes
     command: ["php", "artisan", "schedule:work"]
+    # Mesmo motivo do worker: uma tarefa agendada em execução precisa de tempo
+    # para terminar antes do SIGKILL.
+    stop_grace_period: 60s
     depends_on:
       mysql:
         condition: service_healthy

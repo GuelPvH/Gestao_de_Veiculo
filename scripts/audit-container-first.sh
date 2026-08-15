@@ -25,7 +25,7 @@
 # =============================================================================
 set -u
 
-TARGETS='README.md Makefile make.ps1 docs scripts'
+TARGETS='README.md CONTRIBUTING.md SECURITY.md Makefile make.ps1 docs scripts .github'
 BINARIES='php|composer|artisan|node|npm|npx|mysql|mysqldump|pest|phpstan|pint|rector'
 
 # shellcheck disable=SC2086

@@ -15,6 +15,8 @@ errado — abra uma issue.
 |---|---|
 | **[docs/INSTALACAO.md](docs/INSTALACAO.md)** | **Começa aqui.** Passo a passo do zero: WSL2, Docker Desktop, baixar e rodar o projeto, entrar no container. |
 | **[docs/ARQUITETURA.md](docs/ARQUITETURA.md)** | Escopo completo: cada serviço, cada pacote instalado e o porquê de cada decisão. |
+| **[CONTRIBUTING.md](CONTRIBUTING.md)** | Vai desenvolver? Fluxo de branch, commits, hooks, padrões de código e testes. |
+| **[SECURITY.md](SECURITY.md)** | Como reportar vulnerabilidade e o que é aceitável só em desenvolvimento. |
 | Este README | Referência rápida do dia a dia de quem já está com o projeto no ar. |
 
 ### O caminho mais curto

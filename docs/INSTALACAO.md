@@ -613,6 +613,28 @@ Se for JS/CSS, confira se o container `vite` está de pé (`docker compose ps`).
 make hook-install
 ```
 
+### `git clone` reclama e o `git status` mostra tudo como apagado
+
+Sintoma no Windows: o clone termina com *"You can inspect what was checked out
+with 'git status'"* e depois todos os arquivos aparecem como deletados, mesmo
+existindo no disco.
+
+É o limite de **260 caracteres de caminho do Windows** (MAX_PATH). Alguns
+arquivos do projeto têm nomes longos (as migrations, por exemplo) e estouram o
+limite quando a pasta de destino já é profunda.
+
+Soluções, em ordem de preferência:
+
+1. **Clone dentro do WSL2** (`~/projetos/`) — o Linux não tem esse limite, e é o
+   caminho recomendado deste guia de qualquer forma
+2. Clone numa pasta rasa no Windows (`C:\dev\gv` em vez de
+   `C:\Users\voce\Documents\Projetos\Faculdade\...`)
+3. Habilite caminhos longos no Git:
+
+```bash
+git config --global core.longpaths true
+```
+
 ---
 
 ## 13. Linux e macOS

@@ -1,0 +1,42 @@
+name: Funcionalidade
+description: Sugerir algo novo ou uma melhoria
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problema
+    attributes:
+      label: Qual problema isso resolve
+      description: |
+        Descreva a necessidade, não a solução. "Não consigo achar um veículo
+        pela placa" é melhor que "adicionar campo de busca".
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposta
+    attributes:
+      label: Proposta
+      description: Como você imagina que deveria funcionar.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternativas
+    attributes:
+      label: Alternativas consideradas
+      description: Outras formas de resolver, e por que você prefere a de cima.
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Área
+      options:
+        - Aplicação (frota, domínio)
+        - API
+        - Interface (Blade, Bootstrap)
+        - Infraestrutura (Docker, CI)
+        - Observabilidade (Pulse, Horizon, Sentry)
+        - Documentação
+        - Outra
+    validations:
+      required: true

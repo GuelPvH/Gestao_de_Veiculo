@@ -8,33 +8,49 @@ on:
     # deixe de rodar silenciosamente se a branch default for renomeada.
     branches: [master, main]
 
+# Um push novo na mesma branch cancela o run anterior: sem isto, uma sequência
+# de commits enfileira runs que já nasceram obsoletos.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
+  # ---------------------------------------------------------------------------
+  # Qualidade: os MESMOS comandos do `make check` local, nos mesmos containers.
+  # ---------------------------------------------------------------------------
   quality:
+    name: Qualidade (lint, análise, testes)
     runs-on: ubuntu-latest
+    timeout-minutes: 25
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Copia .env.example para .env
-        run: cp .env.example .env
-
-      - name: Gera credenciais de CI no .env
+      - name: Prepara .env do CI
         run: |
-          # Credenciais efêmeras para o banco do CI — não são segredos reais.
-          echo "DB_PASSWORD=ci-test-password" >> .env
-          echo "MYSQL_ROOT_PASSWORD=ci-root-password" >> .env
-          echo "APP_KEY=base64:$(openssl rand -base64 32)" >> .env
+          cp .env.example .env
+          # Credenciais efêmeras do runner — descartadas com a VM, nunca são
+          # segredo real. Não use este padrão fora do CI.
+          {
+            echo "DB_PASSWORD=$(openssl rand -hex 16)"
+            echo "MYSQL_ROOT_PASSWORD=$(openssl rand -hex 16)"
+            echo "APP_KEY=base64:$(openssl rand -base64 32)"
+          } >> .env
 
-      - name: Build imagens
-        run: docker compose build app
+      - name: Build das imagens usadas no pipeline
+        run: docker compose build app vite mysql
 
-      - name: Sobe dependências (mysql, redis)
+      - name: Sobe as dependências (mysql, redis)
+        # nginx, queue, scheduler e as ferramentas não são necessários para
+        # lint/análise/teste — deixá-los fora corta tempo de CI.
         run: docker compose up -d mysql redis
 
       - name: Aguarda MySQL saudável
         run: |
-          timeout 90s bash -c '
-            until [ "$(docker compose ps mysql --format json | jq -r .Health)" = "healthy" ]; do
+          # `docker inspect` em vez de `compose ps --format json`: o formato do
+          # JSON do compose já mudou entre versões, o do inspect não.
+          timeout 120s bash -c '
+            until [ "$(docker inspect -f "{{.State.Health.Status}}" "$(docker compose ps -q mysql)")" = "healthy" ]; do
               sleep 2
             done'
 
@@ -44,26 +60,218 @@ jobs:
       - name: Instala dependências JS
         run: docker compose run --rm vite npm ci
 
-      - name: Auditoria de dependências
-        run: |
-          docker compose run --rm app composer audit
-          docker compose run --rm vite npm audit --audit-level=high || true
+      - name: Auditoria de segurança (PHP)
+        run: docker compose run --rm app composer audit
+
+      - name: Auditoria de segurança (JS)
+        # Consultivo: uma CVE em dependência transitiva de build não deve
+        # bloquear merge, mas precisa ficar visível no log.
+        run: docker compose run --rm vite npm audit --audit-level=high || true
 
       - name: Pint (verifica, não corrige)
         run: docker compose run --rm app ./vendor/bin/pint --test
 
-      - name: Rector (dry-run)
+      - name: Rector (dry-run — nunca aplica em CI)
         run: docker compose run --rm app ./vendor/bin/rector --dry-run
 
-      - name: Larastan (PHPStan)
+      - name: Larastan (PHPStan nível 8)
         run: docker compose run --rm app ./vendor/bin/phpstan analyse --memory-limit=1G
 
       - name: Testes (Pest)
         run: docker compose run --rm app ./vendor/bin/pest --parallel
 
-      - name: Build frontend
+      - name: Auditoria Container First
+        run: docker compose run --rm app sh scripts/audit-container-first.sh
+
+      - name: Build do front-end
         run: docker compose run --rm vite npm run build
+
+      - name: Logs dos serviços (só em falha)
+        if: failure()
+        run: docker compose logs --tail 100
 
       - name: Cleanup
         if: always()
-        run: docker compose down --volumes
+        run: docker compose down --volumes --remove-orphans
+
+  # ---------------------------------------------------------------------------
+  # Smoke test: sobe a stack COMPLETA e bate nas rotas.
+  #
+  # Existe porque a suíte roda em SQLite em memória e nunca toca nginx, FPM,
+  # MySQL nem Redis de verdade. Um erro de configuração do nginx, um upstream
+  # quebrado ou uma migration que só falha no MySQL passariam batido pelos
+  # testes — e chegariam na branch principal.
+  # ---------------------------------------------------------------------------
+  smoke:
+    name: Smoke test (stack completa)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Prepara .env do CI
+        run: |
+          cp .env.example .env
+          {
+            echo "DB_PASSWORD=$(openssl rand -hex 16)"
+            echo "MYSQL_ROOT_PASSWORD=$(openssl rand -hex 16)"
+            echo "APP_KEY=base64:$(openssl rand -base64 32)"
+          } >> .env
+
+      - name: Sobe a stack completa
+        run: |
+          docker compose build
+          docker compose run --rm app composer install --no-interaction --prefer-dist
+          docker compose run --rm vite npm ci
+          docker compose run --rm vite npm run build
+          docker compose up -d
+
+      - name: Aguarda os serviços ficarem saudáveis
+        run: |
+          timeout 180s bash -c '
+            for svc in app mysql redis nginx queue scheduler; do
+              until [ "$(docker inspect -f "{{.State.Health.Status}}" "$(docker compose ps -q $svc)")" = "healthy" ]; do
+                sleep 3
+              done
+              echo "  $svc: healthy"
+            done'
+
+      - name: Migrations e dados de exemplo
+        run: |
+          docker compose exec -T -u www-data app php artisan migrate --force
+          docker compose exec -T -u www-data app php artisan db:seed --force
+          # Idempotência do seeder é contrato: se quebrar, quebra aqui.
+          docker compose exec -T -u www-data app php artisan db:seed --force
+
+      - name: Rotas respondem
+        run: |
+          set -e
+          check() {
+            code=$(curl -s -o /tmp/body -w '%{http_code}' "http://localhost:8000$1")
+            if [ "$code" != "$2" ]; then
+              echo "FALHA: $1 devolveu $code, esperado $2"
+              cat /tmp/body | head -30
+              exit 1
+            fi
+            echo "  OK  $1 -> $code"
+          }
+          check /              200
+          check /up            200
+          check /up/deep       200
+          check /api/vehicles  200
+          # /pulse sem autenticação tem de ser NEGADO — se virar 200, o gate caiu.
+          check /pulse         403
+
+      - name: /up/deep reporta as dependências
+        run: |
+          body=$(curl -s http://localhost:8000/up/deep)
+          echo "$body"
+          echo "$body" | grep -q '"db":true'    || { echo "FALHA: db nao esta ok"; exit 1; }
+          echo "$body" | grep -q '"redis":true' || { echo "FALHA: redis nao esta ok"; exit 1; }
+
+      - name: /up/deep devolve 503 quando o banco cai
+        run: |
+          docker compose stop mysql
+          sleep 5
+          code=$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8000/up/deep)
+          docker compose start mysql
+          if [ "$code" != "503" ]; then
+            echo "FALHA: com o MySQL parado o health check devolveu $code, esperado 503."
+            echo "Um load balancer confiando nisso mandaria trafego para uma instancia quebrada."
+            exit 1
+          fi
+          echo "  OK  /up/deep -> 503 com o banco fora"
+
+      - name: Rate limit da API dispara 429
+        run: |
+          for i in $(seq 1 25); do
+            code=$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8000/api/vehicles)
+          done
+          if [ "$code" != "429" ]; then
+            echo "FALHA: apos 25 requisicoes anonimas o rate limit devolveu $code, esperado 429."
+            exit 1
+          fi
+          echo "  OK  rate limit ativo"
+
+      - name: Logs dos serviços (só em falha)
+        if: failure()
+        run: docker compose logs --tail 150
+
+      - name: Cleanup
+        if: always()
+        run: docker compose down --volumes --remove-orphans
+
+  # ---------------------------------------------------------------------------
+  # Build de produção.
+  #
+  # O stage `prod` roda config:cache, route:cache, view:cache e event:cache no
+  # BUILD. Cada um deles é um portão que a suíte de testes não atravessa:
+  # `config:cache` quebra com closure na configuração, `route:cache` quebra com
+  # nome de rota duplicado. Os dois já aconteceram neste projeto.
+  # ---------------------------------------------------------------------------
+  producao:
+    name: Build da imagem de produção
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Constrói o stage prod
+        run: docker build -f docker/php/Dockerfile --target prod -t gestao-veiculo:prod-ci .
+
+      - name: A imagem de produção não pode conter ferramenta de dev
+        run: |
+          set -e
+          if docker run --rm gestao-veiculo:prod-ci sh -c 'test -d vendor/phpunit'; then
+            echo "FALHA: dependencia de desenvolvimento presente na imagem de producao."
+            exit 1
+          fi
+          echo "  OK  sem dependencias de dev"
+
+      - name: Os caches de produção existem na imagem
+        run: |
+          set -e
+          for f in bootstrap/cache/config.php bootstrap/cache/routes-v7.php; do
+            if ! docker run --rm gestao-veiculo:prod-ci sh -c "test -f $f"; then
+              echo "FALHA: $f nao foi gerado no build."
+              echo "Sem isso cada container novo paga o custo de compilar no primeiro request."
+              exit 1
+            fi
+            echo "  OK  $f"
+          done
+
+      - name: O front-end compilado está na imagem
+        # O .dockerignore exclui public/build/ do contexto (correto), então os
+        # assets só existem se o stage `assets` tiver rodado e sido copiado.
+        # Sem o manifest, o @vite() do Blade lanca ViteManifestNotFoundException
+        # em TODA pagina — e o build da imagem passa normalmente.
+        run: |
+          set -e
+          if ! docker run --rm gestao-veiculo:prod-ci sh -c 'test -f public/build/manifest.json'; then
+            echo "FALHA: public/build/manifest.json ausente na imagem de producao."
+            echo "A aplicacao subiria sem CSS/JS e quebraria em toda pagina."
+            exit 1
+          fi
+          echo "  OK  manifest do Vite presente"
+
+      - name: A imagem de produção não carrega Node
+        # Se node/npm aparecerem aqui, o multi-stage foi quebrado e a imagem
+        # ganhou centenas de MB e superfície de ataque desnecessária.
+        run: |
+          set -e
+          if docker run --rm gestao-veiculo:prod-ci sh -c 'command -v node >/dev/null 2>&1'; then
+            echo "FALHA: node presente na imagem de producao."
+            exit 1
+          fi
+          echo "  OK  sem Node na imagem final"
+
+      - name: O .env não vazou para a imagem
+        run: |
+          set -e
+          if docker run --rm gestao-veiculo:prod-ci sh -c 'test -f .env'; then
+            echo "FALHA: .env presente na imagem de producao — credenciais embutidas."
+            exit 1
+          fi
+          echo "  OK  sem .env na imagem"
