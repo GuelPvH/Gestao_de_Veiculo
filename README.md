@@ -9,6 +9,32 @@ errado — abra uma issue.
 
 ---
 
+## 📚 Documentação
+
+| Documento | Para quem |
+|---|---|
+| **[docs/INSTALACAO.md](docs/INSTALACAO.md)** | **Começa aqui.** Passo a passo do zero: WSL2, Docker Desktop, baixar e rodar o projeto, entrar no container. |
+| **[docs/ARQUITETURA.md](docs/ARQUITETURA.md)** | Escopo completo: cada serviço, cada pacote instalado e o porquê de cada decisão. |
+| Este README | Referência rápida do dia a dia de quem já está com o projeto no ar. |
+
+### O caminho mais curto
+
+```bash
+cp .env.example .env     # preencha as senhas (DB_PASSWORD, MYSQL_ROOT_PASSWORD)
+make setup               # ou .\make.ps1 setup no PowerShell
+```
+
+Depois abra <http://localhost:8000>. Para entrar no container:
+
+```bash
+docker exec -it veiculo_app bash
+```
+
+> `veiculo` é só o prefixo sugerido no `.env.example`. Você escolhe o seu em
+> `CONTAINER_PREFIX` — vira `<prefixo>_app`, `<prefixo>_mysql`, etc.
+
+---
+
 ## 1. Requisitos
 
 | Ferramenta | Versão usada na validação | Como obter |

@@ -91,6 +91,12 @@ CMD ["php-fpm", "--nodaemonize"]
 # -----------------------------------------------------------------------------
 FROM base AS dev
 
+# `bash` só no stage de desenvolvimento: a imagem base é Alpine, que traz
+# apenas `sh` (BusyBox). Sem isto, `docker exec -it <container> bash` falha
+# com "exec: bash: not found" — que é justamente o comando que todo mundo
+# digita por reflexo. A imagem `prod` continua sem bash, enxuta.
+RUN apk add --no-cache bash
+
 # PCOV para cobertura (rápido), Xdebug para step debugging (lento).
 # Xdebug fica carregado porém em `mode=off`; liga-se pela env XDEBUG_MODE.
 RUN set -eux; \

@@ -3,7 +3,10 @@ name: CI
 on:
   pull_request:
   push:
-    branches: [main]
+    # `master` e `main`: este repositório usa `master`, mas o padrão do GitHub
+    # para repositórios novos é `main`. Listar os dois evita que o pipeline
+    # deixe de rodar silenciosamente se a branch default for renomeada.
+    branches: [master, main]
 
 jobs:
   quality:
