@@ -35,6 +35,23 @@
                 "options": { "maxSize": "5M" }
             },
             {
+                "action": "CaptainHook.File.BlockSecrets",
+                "options": {
+                    "entropyThreshold": 0,
+                    "suppliers": [
+                        "\\CaptainHook\\Secrets\\Regex\\Supplier\\Aws",
+                        "\\CaptainHook\\Secrets\\Regex\\Supplier\\GitHub",
+                        "\\CaptainHook\\Secrets\\Regex\\Supplier\\Google",
+                        "\\CaptainHook\\Secrets\\Regex\\Supplier\\Password"
+                    ],
+                    "blocked": [
+                        "#DB_PASSWORD\\s*=\\s*[A-Za-z0-9]{6,}#",
+                        "#SENTRY_LARAVEL_DSN\\s*=\\s*https?://[^\\s\"]+#"
+                    ],
+                    "allowed": ["#change-me#i"]
+                }
+            },
+            {
                 "action": "CaptainHook.File.ContentMustNotMatchRegex",
                 "options": {
                     "regex": "#^(<<<<<<<|=======|>>>>>>>)#",
