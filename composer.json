@@ -1,24 +1,37 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "laravel/laravel",
+    "name": "gestao-veiculo/programacao-para-web",
     "type": "project",
-    "description": "The skeleton application for the Laravel framework.",
-    "keywords": ["laravel", "framework"],
+    "description": "Gestao de Veiculo - ambiente Laravel integralmente containerizado.",
+    "keywords": ["laravel", "docker", "gestao-de-veiculo"],
     "license": "MIT",
     "require": {
-        "php": "^8.3",
-        "laravel/framework": "^13.8",
-        "laravel/tinker": "^3.0"
+        "php": "^8.4",
+        "laravel/framework": "^13.17",
+        "laravel/horizon": "^5.48",
+        "laravel/pulse": "^1.8",
+        "laravel/sanctum": "^4.3",
+        "laravel/tinker": "^3.0",
+        "league/flysystem-aws-s3-v3": "^3.35",
+        "sentry/sentry-laravel": "^4.27",
+        "spatie/laravel-backup": "^10.3"
     },
     "require-dev": {
+        "barryvdh/laravel-debugbar": "^4.4",
+        "captainhook/captainhook": "*",
+        "captainhook/hook-installer": "*",
+        "driftingly/rector-laravel": "^2.5",
         "fakerphp/faker": "^1.23",
+        "larastan/larastan": "^3.10",
         "laravel/pail": "^1.2.5",
         "laravel/pao": "^1.0.6",
         "laravel/pint": "^1.27",
-        "laravel/sail": "^1.66",
         "mockery/mockery": "^1.6",
         "nunomaduro/collision": "^8.6",
-        "phpunit/phpunit": "^12.5.12"
+        "pestphp/pest": "^5.1",
+        "pestphp/pest-plugin-laravel": "^5.0",
+        "phpunit/phpunit": "^13.2.4",
+        "rector/rector": "^2.6"
     },
     "autoload": {
         "psr-4": {
@@ -33,21 +46,24 @@
         }
     },
     "scripts": {
-        "setup": [
-            "composer install",
-            "@php -r \"file_exists('.env') || copy('.env.example', '.env');\"",
-            "@php artisan key:generate",
-            "@php artisan migrate --force",
-            "npm install --ignore-scripts",
-            "npm run build"
+        "//": [
+            "Os scripts `setup` e `dev` do skeleton foram removidos: ambos chamavam",
+            "npm/artisan pressupondo Node e um servidor embutido no host. Aqui quem",
+            "orquestra e o compose — use `make setup` (ou .\\make.ps1 setup)."
         ],
-        "dev": [
-            "Composer\\Config::disableProcessTimeout",
-            "npx concurrently -c \"#93c5fd,#c4b5fd,#fb7185,#fdba74\" \"php artisan serve\" \"php artisan queue:listen --tries=1 --timeout=0\" \"php artisan pail --timeout=0\" \"npm run dev\" --names=server,queue,logs,vite --kill-others"
-        ],
+        "lint": "./vendor/bin/pint --test",
+        "lint:fix": "./vendor/bin/pint --dirty",
+        "analyse": "./vendor/bin/phpstan analyse --memory-limit=1G",
+        "refactor": "./vendor/bin/rector process --dry-run",
         "test": [
-            "@php artisan config:clear --ansi @no_additional_args",
-            "@php artisan test"
+            "@php artisan config:clear --ansi",
+            "./vendor/bin/pest"
+        ],
+        "check": [
+            "@lint",
+            "@refactor",
+            "@analyse",
+            "@test"
         ],
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
@@ -55,14 +71,6 @@
         ],
         "post-update-cmd": [
             "@php artisan vendor:publish --tag=laravel-assets --ansi --force"
-        ],
-        "post-root-package-install": [
-            "@php -r \"file_exists('.env') || copy('.env.example', '.env');\""
-        ],
-        "post-create-project-cmd": [
-            "@php artisan key:generate --ansi",
-            "@php -r \"file_exists('database/database.sqlite') || touch('database/database.sqlite');\"",
-            "@php artisan migrate --graceful --ansi"
         ],
         "pre-package-uninstall": [
             "Illuminate\\Foundation\\ComposerScripts::prePackageUninstall"
@@ -79,7 +87,8 @@
         "sort-packages": true,
         "allow-plugins": {
             "pestphp/pest-plugin": true,
-            "php-http/discovery": true
+            "php-http/discovery": true,
+            "captainhook/hook-installer": true
         }
     },
     "minimum-stability": "stable",

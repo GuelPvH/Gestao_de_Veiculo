@@ -1,0 +1,44 @@
+# Credenciais nunca entram na imagem.
+.env
+.env.*
+!.env.example
+
+# Ruído de VCS / editor
+.git
+.gitignore
+.gitattributes
+.github/
+.idea/
+.vscode/
+.fleet/
+
+# Dependências: instaladas dentro da imagem, nunca copiadas do host
+vendor/
+node_modules/
+
+# Artefatos de runtime
+storage/logs/*
+storage/debugbar/*
+storage/framework/cache/*
+storage/framework/sessions/*
+storage/framework/views/*
+storage/framework/testing/*
+public/build/
+public/hot
+public/storage
+
+# Relatórios e caches de ferramentas
+.phpunit.cache/
+.phpunit.result.cache
+.pest/
+build/
+coverage/
+
+# Documentação não é necessária no contexto de build
+*.md
+!README.md
+docs/
+
+# Dumps
+*.sql
+*.sql.gz

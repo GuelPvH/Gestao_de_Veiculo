@@ -1,0 +1,58 @@
+# =============================================================================
+# CODEOWNERS
+#
+# O GitHub usa este arquivo para pedir review automaticamente a quem entende
+# da área tocada. Duas consequências práticas:
+#
+#   1. Ninguém precisa adivinhar quem chamar num PR.
+#   2. Com "Require review from Code Owners" ligado na branch protection
+#      (ver scripts/branch-protection.sh), as áreas sensíveis abaixo não podem
+#      ser mergeadas sem o olho de quem responde por elas.
+#
+# A última regra que casa com o arquivo é a que vale — ordem importa: o mais
+# específico vem depois.
+# =============================================================================
+
+# Padrão: tudo tem dono.
+*   @GuelPvH
+
+# -----------------------------------------------------------------------------
+# Infraestrutura e portões de qualidade.
+#
+# Um erro aqui não quebra uma tela: quebra o ambiente de todo mundo, o deploy,
+# ou desliga silenciosamente uma verificação. Revisão obrigatória.
+# -----------------------------------------------------------------------------
+/docker/              @GuelPvH
+/compose.yaml         @GuelPvH
+/.github/             @GuelPvH
+/Makefile             @GuelPvH
+/make.ps1             @GuelPvH
+/captainhook.json     @GuelPvH
+/phpstan.neon         @GuelPvH
+/pint.json            @GuelPvH
+/rector.php           @GuelPvH
+/phpunit.xml          @GuelPvH
+/scripts/             @GuelPvH
+
+# -----------------------------------------------------------------------------
+# Configuração e segredos: `config/` congela no `config:cache` do build de
+# produção, e o `.env.example` é o contrato de quem clona o projeto.
+# -----------------------------------------------------------------------------
+/config/              @GuelPvH
+/.env.example         @GuelPvH
+
+# -----------------------------------------------------------------------------
+# Migrations: são irreversíveis na prática depois que chegam na master.
+# -----------------------------------------------------------------------------
+/database/migrations/ @GuelPvH
+
+# -----------------------------------------------------------------------------
+# Autorização: cada linha aqui é a resposta a "quem pode fazer o quê".
+# É a última coisa que se deve mudar sem revisão.
+# -----------------------------------------------------------------------------
+/app/Policies/        @GuelPvH
+
+# -----------------------------------------------------------------------------
+# Decisões de arquitetura: um ADR novo é combinado, não anunciado.
+# -----------------------------------------------------------------------------
+/docs/adr/            @GuelPvH

@@ -21,7 +21,14 @@
 /storage/*.key
 /storage/pail
 /vendor
-_ide_helper.php
+
+# Debugbar grava centenas de arquivos JSON de debug em storage/debugbar/.
+# Sem esta linha eles acabam commitados.
+/storage/debugbar
+
+# Dumps gerados por `make db-dump`
+/dump-*.sql
 Homestead.json
 Homestead.yaml
 Thumbs.db
+/.secrets

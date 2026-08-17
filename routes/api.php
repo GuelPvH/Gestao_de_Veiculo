@@ -1,0 +1,38 @@
+<?php
+
+declare(strict_types=1);
+
+use App\Http\Controllers\Api\VehicleApiController;
+use App\Http\Resources\UserResource;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
+
+/*
+|--------------------------------------------------------------------------
+| API Routes
+|--------------------------------------------------------------------------
+|
+| Todas as rotas já recebem o middleware `throttle:api` via configuração
+| do bootstrap/app.php. Rate limit diferenciado: 120/min autenticado,
+| 20/min anônimo.
+|
+*/
+
+// Rotas públicas de leitura
+//
+// `names('api.vehicles')` evita colisão com a rota web `vehicles.index`
+// (o nome padrão do apiResource seria o mesmo, e `route:cache` recusa
+// duas rotas com o mesmo nome).
+Route::apiResource('vehicles', VehicleApiController::class)
+    ->only(['index', 'show'])
+    ->names('api.vehicles');
+
+// Rotas que exigem autenticação (Sanctum)
+Route::middleware('auth:sanctum')->group(function (): void {
+    Route::get('/user', fn (Request $request): UserResource => new UserResource($request->user()))
+        ->name('api.user');
+
+    Route::apiResource('vehicles', VehicleApiController::class)
+        ->only(['store', 'update', 'destroy'])
+        ->names('api.vehicles');
+});

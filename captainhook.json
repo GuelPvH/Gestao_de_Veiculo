@@ -1,0 +1,113 @@
+{
+    "$schema": "https://raw.githubusercontent.com/captainhook-git/captainhook/main/resources/schema.json",
+
+    "config": {
+        "run": {
+            "mode": "docker",
+            "exec": "./docker/captainhook/githook.sh",
+            "git": "/var/www/html/.git"
+        }
+    },
+
+    "pre-commit": {
+        "enabled": true,
+        "actions": [
+            {
+                "action": "sh -c 'echo \"Commit direto bloqueado nesta branch — crie uma branch e abra PR.\"; exit 1'",
+                "conditions": [
+                    { "exec": "CaptainHook.Status.OnMatchingBranch", "args": ["#^(main|master|develop)$#"] }
+                ]
+            },
+            {
+                "action": "vendor/bin/pint --dirty --test",
+                "conditions": [
+                    { "exec": "CaptainHook.FileStaged.OfType", "args": ["php"] }
+                ]
+            },
+            {
+                "action": "vendor/bin/phpstan analyse --memory-limit=1G --error-format=table",
+                "conditions": [
+                    { "exec": "CaptainHook.FileStaged.OfType", "args": ["php"] }
+                ]
+            },
+            {
+                "action": "CaptainHook.File.MaxSize",
+                "options": { "maxSize": "5M" }
+            },
+            {
+                "action": "CaptainHook.File.BlockSecrets",
+                "options": {
+                    "entropyThreshold": 0,
+                    "suppliers": [
+                        "\\CaptainHook\\Secrets\\Regex\\Supplier\\Aws",
+                        "\\CaptainHook\\Secrets\\Regex\\Supplier\\GitHub",
+                        "\\CaptainHook\\Secrets\\Regex\\Supplier\\Google",
+                        "\\CaptainHook\\Secrets\\Regex\\Supplier\\Password"
+                    ],
+                    "blocked": [
+                        "#DB_PASSWORD[^\\S\\r\\n]*=[^\\S\\r\\n]*[A-Za-z0-9]{6,}#",
+                        "#SENTRY_LARAVEL_DSN[^\\S\\r\\n]*=[^\\S\\r\\n]*https?://[^\\s\"]+#"
+                    ],
+                    "allowed": [
+                        "#change-me#i",
+                        "#PASSWORD[^\\S\\r\\n]*=[\\r\\n]#i"
+                    ]
+                }
+            },
+            {
+                "action": "CaptainHook.File.ContentMustNotMatchRegex",
+                "options": {
+                    "regex": "#^(<<<<<<<|=======|>>>>>>>)#",
+                    "error": "Marcador de conflito de merge esquecido no arquivo"
+                }
+            }
+        ]
+    },
+
+    "pre-push": {
+        "enabled": true,
+        "actions": [
+            {
+                "action": "sh -c 'echo \"Push direto bloqueado nesta branch — abra PR.\"; exit 1'",
+                "conditions": [
+                    { "exec": "CaptainHook.Status.OnMatchingBranch", "args": ["#^(main|master)$#"] }
+                ]
+            },
+            { "action": "composer validate --strict --no-check-publish" },
+            { "action": "vendor/bin/pint --test" },
+            { "action": "vendor/bin/phpstan analyse --memory-limit=1G" },
+            { "action": "vendor/bin/pest --parallel" }
+        ]
+    },
+
+    "commit-msg": {
+        "enabled": true,
+        "actions": [{
+            "action": "CaptainHook.Message.MustMatchRegex",
+            "options": {
+                "regex": "#^(feat|fix|docs|style|refactor|perf|test|chore|ci|build|revert)(\\(.+\\))?: .{1,72}(\\R|$)#",
+                "error": "Use Conventional Commits: tipo(escopo): descrição"
+            }
+        }]
+    },
+
+    "post-checkout": {
+        "enabled": true,
+        "actions": [{
+            "action": "composer install --no-interaction",
+            "conditions": [
+                { "exec": "CaptainHook.FileChanged.Any", "args": [["composer.lock"]] }
+            ]
+        }]
+    },
+
+    "post-merge": {
+        "enabled": true,
+        "actions": [{
+            "action": "composer install --no-interaction",
+            "conditions": [
+                { "exec": "CaptainHook.FileChanged.Any", "args": [["composer.lock"]] }
+            ]
+        }]
+    }
+}
