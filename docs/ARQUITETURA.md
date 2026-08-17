@@ -139,8 +139,10 @@ existisse só no `app`, toda request viraria `404 File not found`.
 
 ### `mysql` — banco de dados
 
-MySQL 8.4 LTS. **Não publica porta para o host** — quem precisa de interface
-gráfica usa o phpMyAdmin.
+MySQL 9.7 LTS. A tag segue a trilha LTS (`8.4`, `9.7`), nunca a *innovation*
+(`26.x`, que é a apontada por `latest`) — ver o comentário em
+`docker/mysql/Dockerfile`. **Não publica porta para o host** — quem precisa de
+interface gráfica usa o phpMyAdmin.
 
 - **Volume:** `mysql_data` (os dados sobrevivem a `make down`)
 - **Healthcheck:** um `SELECT 1` real contra o banco da aplicação, não apenas
