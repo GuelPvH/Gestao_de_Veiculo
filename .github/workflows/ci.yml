@@ -77,8 +77,15 @@ jobs:
       - name: Larastan (PHPStan nível 8)
         run: docker compose run --rm app ./vendor/bin/phpstan analyse --memory-limit=1G
 
-      - name: Testes (Pest)
-        run: docker compose run --rm app ./vendor/bin/pest --parallel
+      # `--min=80` é o que transforma a meta de cobertura em regra. Sem esta
+      # flag o número existiria só no Makefile e no CONTRIBUTING: ninguém
+      # verificaria, e a cobertura cairia um PR por vez sem nunca falhar nada.
+      #
+      # O limite é 80 e o projeto está acima disso — é um piso, não uma meta.
+      # PCOV (não Xdebug) faz a medição: está na imagem `dev` e custa ~10% de
+      # tempo, contra 2–3x do Xdebug.
+      - name: Testes (Pest) com cobertura mínima de 80%
+        run: docker compose run --rm app ./vendor/bin/pest --parallel --coverage --min=80
 
       - name: Auditoria Container First
         run: docker compose run --rm app sh scripts/audit-container-first.sh

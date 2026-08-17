@@ -28,8 +28,11 @@ ela roda no CI. Documentação que ensina comando de host **falha o pipeline**.
 
 ### 1. Crie uma branch
 
-Commit direto em `master`, `main` ou `develop` é **bloqueado pelos git hooks**.
-Não é convenção: o hook falha e o commit não acontece.
+Commit direto em `master`, `main` ou `develop` é barrado pelos git hooks — e,
+no servidor, pela **branch protection** do GitHub, que exige Pull Request e CI
+verde. A diferença importa: o hook é atalho para você descobrir em um segundo, e
+é ignorável com `--no-verify`; a proteção do servidor não é. Ver
+[docs/adr/0005](docs/adr/0005-hooks-locais-e-branch-protection.md).
 
 ```bash
 git checkout master
@@ -89,6 +92,16 @@ O `pre-push` roda a suíte inteira antes de deixar o push sair. É mais lento qu
 
 Abra o PR preenchendo o template. O CI precisa estar verde para o merge.
 
+Antes de abrir, passe os olhos na **[Definição de
+Pronto](docs/DEFINICAO_DE_PRONTO.md)** — é a lista do que "pronto" significa
+aqui, e existe para o PR não voltar três vezes no review. O **título** do PR
+segue Conventional Commits: no merge por squash é ele que fica na história, e há
+um check de CI que valida.
+
+Vai revisar o PR de outra pessoa (ou receber o review do seu)? **[Revisão de
+código](docs/REVISAO_DE_CODIGO.md)** diz o que olhar, em que ordem, e como
+escrever o comentário.
+
 ---
 
 ## O que os hooks verificam
@@ -103,7 +116,8 @@ Abra o PR preenchendo o template. O CI precisa estar verde para o merge.
 ### "O hook está me atrapalhando"
 
 Se um hook barrou você, ele encontrou alguma coisa. Leia a mensagem — ela diz o
-quê. Resista a `--no-verify`: o CI vai barrar do mesmo jeito, só que mais tarde e
+quê. Resista a `--no-verify`: o hook é local e ignorável, mas o CI e a branch
+protection **não são**. O resultado de pular o hook é a mesma falha, mais tarde e
 na frente do time.
 
 Se o hook estiver **errado**, isso é um bug do hook. Abra uma issue e corrija a
@@ -130,6 +144,9 @@ cobrem — e que portanto **quebra a suíte** se for violado:
 > o `env()`. Qualquer chamada fora de um arquivo de config passa a devolver `null`
 > em produção — e o bug só aparece lá.
 
+- FormRequests são `final` e estendem o `FormRequest` do framework
+- Policies são `final readonly`
+
 ### Controller de API nunca devolve Model
 
 Sempre via Resource:
@@ -139,14 +156,51 @@ return VehicleResource::collection($vehicles);   // ✅
 return Vehicle::all();                           // ❌ vaza toda coluna da tabela
 ```
 
+### Controller não valida e não autoriza
+
+Validação mora em **FormRequest** (`app/Http/Requests/`), autorização em
+**Policy** (`app/Policies/`):
+
+```php
+public function store(StoreVehicleRequest $request): JsonResponse   // ✅
+{
+    $vehicle = Vehicle::create($request->validated());              // ✅ validated(), nunca all()
+}
+
+public function store(Request $request): JsonResponse               // ❌
+{
+    $request->validate([...]);   // ❌ as regras vão divergir entre store e update
+}
+```
+
+Motivo completo no
+[ADR 0006](docs/adr/0006-validacao-em-form-request-autorizacao-em-policy.md).
+
+> **Criando um recurso do zero?** Não invente a estrutura: siga a
+> **[docs/RECEITA_NOVO_RECURSO.md](docs/RECEITA_NOVO_RECURSO.md)**, que lista os
+> 15 passos e o arquivo de referência de cada camada.
+
+### Nomes
+
+Identificador em inglês, texto para pessoa em português. Os termos do domínio
+(veículo, frota, placa, situação) têm um nome só, definido em
+**[docs/GLOSSARIO.md](docs/GLOSSARIO.md)** — consulte antes de batizar coisa nova,
+e acrescente o termo novo ali no mesmo PR.
+
 ---
 
 ## Testes
 
 ```bash
 make test             # suíte completa
-make test-coverage    # com cobertura (mínimo 80%)
+make test-coverage    # com cobertura (mínimo 80%) — é o que o CI cobra
 ```
+
+O piso de 80% **falha o CI**, não é sugestão. Ele é um chão para a cobertura não
+cair um PR por vez sem nada reclamar — não uma meta a perseguir (a cobertura atual
+está acima disso). E cobertura não mede teste bom: teste que executa a linha sem
+verificar nada conta igual. Ver
+[ADR 0007](docs/adr/0007-cobertura-minima-de-80-por-cento.md).
 
 Rodar um arquivo ou filtrar:
 
@@ -163,16 +217,26 @@ o banco `gestao_veiculo_testing`, que já existe.
 
 - Regra de negócio nova → teste na Action
 - Endpoint novo → teste de feature cobrindo sucesso **e** falha de autorização
+- Validação nova → um teste por regra que você não gostaria que fosse apagada sem
+  ninguém perceber
 - Correção de bug → um teste que falha antes do fix e passa depois
+
+> Teste que não falha quando o código está errado não é teste. Quebre a linha de
+> propósito, veja vermelho, desfaça — leva dez segundos e é a única forma de saber
+> que o teste testa algo.
 
 ---
 
 ## Migrations
 
 ```bash
-make artisan c="make:migration cria_tabela_x"
+make artisan c="make:migration create_drivers_table"
 make migrate
 ```
+
+O nome da migration é em inglês, no padrão do framework
+(`create_<tabela>_table`, `add_<coluna>_to_<tabela>_table`) — igual às que já
+existem. Ver [GLOSSARIO.md](docs/GLOSSARIO.md).
 
 **Nunca edite uma migration que já foi para a `master`** — outras pessoas já a
 rodaram. Crie uma nova.
@@ -203,6 +267,10 @@ em `require` vai para a imagem de produção.
 - O `.env` **nunca** vai para o Git (está no `.gitignore`)
 - Adicionou variável nova? Adicione também no **`.env.example`**, com um valor de
   exemplo ou vazio — quem clonar depois precisa saber que ela existe
+- Removeu ou renomeou a configuração que lia uma variável? **Apague a linha do
+  `.env.example`.** Chave que ninguém lê é pior que chave ausente: quem preenche
+  acredita ter configurado. Há um teste (`tests/Architecture/EnvExampleTest.php`)
+  que barra chave morta e chave duplicada
 - Credencial de sistema externo (Sentry DSN, chave AWS) **não se inventa**: deixe
   vazia e documente a pendência
 - O hook `pre-commit` tem detecção de segredo, mas ela é **rede de segurança**,
@@ -213,5 +281,13 @@ em `require` vai para a imagem de produção.
 ## Precisa de ajuda?
 
 1. **[docs/INSTALACAO.md](docs/INSTALACAO.md)** — ambiente e troubleshooting
-2. **[docs/ARQUITETURA.md](docs/ARQUITETURA.md)** — como o projeto é organizado e por quê
-3. Abra uma issue descrevendo o que tentou e o que aconteceu
+2. **[docs/RECEITA_NOVO_RECURSO.md](docs/RECEITA_NOVO_RECURSO.md)** — o passo a passo de um recurso completo
+3. **[docs/ARQUITETURA.md](docs/ARQUITETURA.md)** — como o projeto é organizado
+4. **[docs/adr/](docs/adr/README.md)** — **por quê** é assim. Antes de propor mudar um padrão, leia o ADR dele
+5. **[docs/GLOSSARIO.md](docs/GLOSSARIO.md)** — o nome certo de cada coisa
+6. Abra uma issue descrevendo o que tentou e o que aconteceu
+
+E, principalmente: **pergunte**. Trinta minutos travado no mesmo ponto é o limite
+saudável. Traga o que você quer que aconteça, a mensagem de erro completa e o que
+já tentou — nesse formato a resposta chega em minutos. Ficar travado em silêncio
+por um dia é a única coisa aqui que conta como erro.

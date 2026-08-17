@@ -1,0 +1,56 @@
+name: Título do PR
+
+# =============================================================================
+# Por que este workflow existe.
+#
+# O hook `commit-msg` valida cada COMMIT (Conventional Commits). Mas no merge
+# por squash — o padrão deste repositório — a mensagem que fica na história da
+# master é o TÍTULO DO PR, que nenhum hook local vê. Sem esta verificação, a
+# convenção vale para commits que serão esmagados e não vale para a única
+# mensagem que sobrevive.
+#
+# A regex é a MESMA do captainhook.json. Se uma mudar, a outra tem de mudar.
+# =============================================================================
+
+on:
+  pull_request:
+    # `edited` é essencial: sem ele, corrigir o título não reexecuta a
+    # verificação e o check fica vermelho para sempre.
+    types: [opened, edited, reopened, synchronize]
+
+permissions:
+  contents: read
+
+jobs:
+  titulo:
+    name: Conventional Commits
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Valida o título
+        env:
+          # Via env, nunca interpolado direto no script: um título com backtick
+          # ou `$(...)` seria executado pelo shell do runner.
+          TITULO: ${{ github.event.pull_request.title }}
+        run: |
+          PADRAO='^(feat|fix|docs|style|refactor|perf|test|chore|ci|build|revert)(\(.+\))?: .{1,72}$'
+
+          if printf '%s' "$TITULO" | grep -qE "$PADRAO"; then
+            echo "  OK  $TITULO"
+            exit 0
+          fi
+
+          echo "FALHA: o título do PR não segue Conventional Commits."
+          echo
+          echo "  Recebido: $TITULO"
+          echo
+          echo "  Formato:  tipo(escopo opcional): descrição em até 72 caracteres"
+          echo "  Tipos:    feat fix docs style refactor perf test chore ci build revert"
+          echo
+          echo "  Exemplos:"
+          echo "    feat(frota): filtra veiculos por placa"
+          echo "    fix: corrige 502 apos recriar o container do app"
+          echo
+          echo "Edite o título do PR — o check roda de novo automaticamente."
+          exit 1

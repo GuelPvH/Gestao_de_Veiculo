@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreVehicleRequest;
+use App\Http\Requests\UpdateVehicleRequest;
 use App\Http\Resources\VehicleResource;
 use App\Models\Vehicle;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Support\Facades\Gate;
 
 final class VehicleApiController extends Controller
 {
@@ -23,40 +25,35 @@ final class VehicleApiController extends Controller
         return new VehicleResource($vehicle);
     }
 
-    public function store(Request $request): JsonResponse
+    /**
+     * Validação e autorização acontecem no StoreVehicleRequest, antes deste
+     * método existir. Se o corpo chegou aqui, ele é válido e permitido.
+     */
+    public function store(StoreVehicleRequest $request): JsonResponse
     {
-        $validated = $request->validate([
-            'plate' => ['required', 'string', 'max:10', 'unique:vehicles,plate'],
-            'brand' => ['required', 'string', 'max:50'],
-            'model' => ['required', 'string', 'max:50'],
-            'year' => ['required', 'integer', 'min:1900', 'max:'.(date('Y') + 1)],
-            'status' => ['sometimes', 'string', 'in:disponivel,em_uso,manutencao'],
-        ]);
-
-        $vehicle = Vehicle::create($validated);
+        $vehicle = Vehicle::create($request->validated());
 
         return new VehicleResource($vehicle)
             ->response()
             ->setStatusCode(201);
     }
 
-    public function update(Request $request, Vehicle $vehicle): VehicleResource
+    public function update(UpdateVehicleRequest $request, Vehicle $vehicle): VehicleResource
     {
-        $validated = $request->validate([
-            'plate' => ['sometimes', 'string', 'max:10', 'unique:vehicles,plate,'.$vehicle->id],
-            'brand' => ['sometimes', 'string', 'max:50'],
-            'model' => ['sometimes', 'string', 'max:50'],
-            'year' => ['sometimes', 'integer', 'min:1900', 'max:'.(date('Y') + 1)],
-            'status' => ['sometimes', 'string', 'in:disponivel,em_uso,manutencao'],
-        ]);
-
-        $vehicle->update($validated);
+        $vehicle->update($request->validated());
 
         return new VehicleResource($vehicle->refresh());
     }
 
+    /**
+     * Remoção não tem corpo para validar, então não há FormRequest onde pendurar
+     * a autorização — ela fica explícita aqui. `authorize` (e não `allows`)
+     * porque queremos a exceção que o Laravel converte em 403.
+     */
     public function destroy(Vehicle $vehicle): JsonResponse
     {
+        Gate::authorize('delete', $vehicle);
+
         $vehicle->delete();
 
         return response()->json(['message' => 'Veículo removido com sucesso.'], 200);

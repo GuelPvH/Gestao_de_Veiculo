@@ -78,6 +78,93 @@ it('remove veículo com autenticação', function (): void {
     expect(Vehicle::find($vehicle->id))->toBeNull();
 });
 
+/*
+|--------------------------------------------------------------------------
+| Validação (StoreVehicleRequest / UpdateVehicleRequest)
+|--------------------------------------------------------------------------
+|
+| Endpoint testado só no caminho feliz é endpoint testado pela metade. Cada
+| caso abaixo cobre uma regra que alguém poderia apagar sem quebrar nenhum
+| outro teste da suíte.
+|
+*/
+
+it('rejeita criação sem os campos obrigatórios', function (): void {
+    Sanctum::actingAs(User::factory()->create());
+
+    postJson('/api/vehicles', [])
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors(['plate', 'brand', 'model', 'year']);
+});
+
+it('rejeita placa já cadastrada', function (): void {
+    Sanctum::actingAs(User::factory()->create());
+    $existing = Vehicle::factory()->create();
+
+    postJson('/api/vehicles', [
+        'plate' => $existing->plate,
+        'brand' => 'Fiat',
+        'model' => 'Uno',
+        'year' => 2020,
+    ])
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors(['plate']);
+});
+
+it('rejeita status fora do enum', function (): void {
+    Sanctum::actingAs(User::factory()->create());
+
+    postJson('/api/vehicles', [
+        'plate' => 'ABC1D23',
+        'brand' => 'Fiat',
+        'model' => 'Uno',
+        'year' => 2020,
+        'status' => 'vendido',
+    ])
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors(['status']);
+});
+
+it('rejeita ano fora da faixa aceita', function (): void {
+    Sanctum::actingAs(User::factory()->create());
+
+    postJson('/api/vehicles', [
+        'plate' => 'ABC1D24',
+        'brand' => 'Fiat',
+        'model' => 'Uno',
+        'year' => 1899,
+    ])
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors(['year']);
+});
+
+// Salvar sem mexer na placa não pode falhar contra o próprio registro — é o
+// que o `->ignore()` do UpdateVehicleRequest garante.
+it('aceita atualização que reenvia a própria placa', function (): void {
+    Sanctum::actingAs(User::factory()->create());
+    $vehicle = Vehicle::factory()->create();
+
+    putJson("/api/vehicles/{$vehicle->id}", [
+        'plate' => $vehicle->plate,
+        'brand' => 'Fiat',
+    ])->assertOk();
+});
+
+it('rejeita atualização para placa de outro veículo', function (): void {
+    Sanctum::actingAs(User::factory()->create());
+    [$first, $second] = Vehicle::factory()->count(2)->create()->all();
+
+    putJson("/api/vehicles/{$first->id}", ['plate' => $second->plate])
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors(['plate']);
+});
+
+it('devolve 404 ao atualizar veículo inexistente', function (): void {
+    Sanctum::actingAs(User::factory()->create());
+
+    putJson('/api/vehicles/999999', ['brand' => 'Fiat'])->assertNotFound();
+});
+
 it('nunca expõe campos sensíveis do Resource', function (): void {
     Vehicle::factory()->create();
 

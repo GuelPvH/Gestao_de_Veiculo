@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Rector\Config\RectorConfig;
+use Rector\DeadCode\Rector\ClassMethod\RemoveUnusedPublicMethodParameterRector;
 use Rector\Php81\Rector\Array_\ArrayToFirstClassCallableRector;
 use RectorLaravel\Rector\StaticCall\DispatchToHelperFunctionsRector;
 use RectorLaravel\Set\LaravelSetList;
@@ -40,6 +41,17 @@ return RectorConfig::configure()
         // Trocar por `dispatch(new Job())` não corrige nada e ainda esconde
         // o nome do job atrás de um helper global.
         DispatchToHelperFunctionsRector::class,
+
+        // Assinatura de método de Policy é CONTRATO do framework, não código
+        // morto: o Laravel chama `create(User $user)` e
+        // `update(User $user, Vehicle $vehicle)`. Hoje as regras devolvem `true`
+        // sem consultar os argumentos (não há papéis no projeto ainda), e o
+        // Rector conclui que os parâmetros são inúteis. Aplicar isso deixaria a
+        // Policy sem o `$user` — exatamente o argumento que a primeira regra de
+        // permissão real vai usar.
+        RemoveUnusedPublicMethodParameterRector::class => [
+            __DIR__.'/app/Policies',
+        ],
 
         // `config/sentry.php` precisa do callable como array `[classe, método]`
         // — `config:cache` serializa a config com `var_export`, que não sabe

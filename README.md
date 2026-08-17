@@ -16,6 +16,7 @@ errado — abra uma issue.
 | **[docs/INSTALACAO.md](docs/INSTALACAO.md)** | **Começa aqui.** Passo a passo do zero: WSL2, Docker Desktop, baixar e rodar o projeto, entrar no container. |
 | **[docs/ARQUITETURA.md](docs/ARQUITETURA.md)** | Escopo completo: cada serviço, cada pacote instalado e o porquê de cada decisão. |
 | **[CONTRIBUTING.md](CONTRIBUTING.md)** | Vai desenvolver? Fluxo de branch, commits, hooks, padrões de código e testes. |
+| **[docs/adr/](docs/adr/README.md)** | *Por quê* de cada decisão que é cara de reverter — e como registrar a próxima. Leia antes de propor mudar um padrão. |
 | **[SECURITY.md](SECURITY.md)** | Como reportar vulnerabilidade e o que é aceitável só em desenvolvimento. |
 | Este README | Referência rápida do dia a dia de quem já está com o projeto no ar. |
 
@@ -199,17 +200,25 @@ antes dele gera erro de análise que some sozinho depois.
 make check      # roda os quatro; usa pint --test (não altera arquivo), o modo do CI
 ```
 
+> **`make check` passa e o CI reprova?** Provavelmente é a cobertura. O `check`
+> roda o Pest sem medir; o CI roda `pest --coverage --min=80` e **falha abaixo
+> de 80%**. Antes de abrir o PR, rode `make test-coverage` — é o mesmo comando
+> com o mesmo piso.
+
 Testes rodam contra **SQLite em memória**, nunca contra o banco de
 desenvolvimento. Se o projeto passar a depender de recurso específico do MySQL
 (coluna JSON, fulltext, `ENUM`), o SQLite mente — nesse caso aponte
 `DB_CONNECTION`/`DB_DATABASE` do `phpunit.xml` para `gestao_veiculo_testing`,
 que já é criado no primeiro boot do MySQL.
 
-Cobertura (usa PCOV, já instalado):
+Cobertura (usa PCOV, já instalado — **mínimo 80%**, o mesmo do CI):
 
 ```bash
 make test-coverage
 ```
+
+O piso de 80% é um chão, não uma meta: existe para a cobertura não cair um PR
+por vez sem nada reclamar.
 
 ---
 
@@ -234,6 +243,20 @@ curl -X POST http://localhost:8000/api/vehicles \
 
 Rate limit: 120 req/min autenticado, 20 req/min anônimo.
 
+**Onde mexer quando as regras mudarem** — nunca no controller:
+
+| Precisa mudar | Arquivo |
+|---|---|
+| Quais campos são aceitos e o que é válido | `app/Http/Requests/StoreVehicleRequest.php` e `UpdateVehicleRequest.php` |
+| *Quem* pode criar, editar ou remover | `app/Policies/VehiclePolicy.php` |
+
+Hoje a Policy responde "toda pessoa autenticada pode", porque o projeto ainda
+não tem papéis. Quando o primeiro papel aparecer, a mudança é uma linha na
+Policy e nenhuma no controller. Um teste de arquitetura em
+`tests/Architecture/ArchTest.php` impede que validação volte para dentro do
+controller. O raciocínio completo está no ADR de validação e autorização, em
+[docs/adr/](docs/adr/README.md).
+
 ---
 
 ## 6b. Observabilidade
@@ -253,7 +276,17 @@ Rate limit: 120 req/min autenticado, 20 req/min anônimo.
 ## 6c. CI/CD
 
 - **GitHub Actions** (`.github/workflows/ci.yml`): espelha o `make check` local
-  nos mesmos containers.
+  nos mesmos containers, e ainda exige **cobertura ≥ 80%** (`pest --coverage
+  --min=80`) — o único passo do CI que não está no `make check`.
+- **Título do PR** (`.github/workflows/pr-title.yml`): valida o título em
+  Conventional Commits. O hook `commit-msg` só vê commit local; no merge por
+  squash, o título do PR é a única mensagem que sobrevive na master — e nenhum
+  hook a alcança. A regex é a mesma do `captainhook.json`: mudou uma, muda a
+  outra. Corrigir o título reexecuta o check sozinho.
+- **CODEOWNERS** (`.github/CODEOWNERS`): pede review automaticamente nas áreas
+  em que um erro não quebra uma tela, quebra o ambiente de todo mundo —
+  `docker/`, `compose.yaml`, `.github/`, `config/`, `database/migrations/`,
+  `app/Policies/`, `docs/adr/` e os arquivos de qualidade.
 - **Dependabot** (`.github/dependabot.yml`): atualiza composer, npm, Docker
   images e GitHub Actions semanalmente.
 - **CaptainHook** (`captainhook.json`): git hooks declarativos, Container First.

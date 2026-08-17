@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Http\Controllers\Controller;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Foundation\Http\FormRequest;
 
 /*
 |--------------------------------------------------------------------------
@@ -61,6 +62,22 @@ arch('actions tem um unico ponto de entrada')
 arch('actions nao dependem de facade')
     ->expect('Illuminate\Support\Facades')
     ->not->toBeUsedIn('App\Actions');
+
+// Validação de entrada tem UM lugar: o FormRequest. Sem esta regra, o próximo
+// endpoint nasce com `$request->validate([...])` dentro do controller e as
+// regras da mesma entidade passam a existir em dois arquivos que divergem.
+arch('form requests sao finais e estendem o FormRequest do framework')
+    ->expect('App\Http\Requests')
+    ->toBeClasses()
+    ->toBeFinal()
+    ->toExtend(FormRequest::class);
+
+// Uma Policy que depende de estado interno mente sobre a decisão que tomou:
+// `readonly` garante que a resposta venha só dos argumentos recebidos.
+arch('policies sao finais e sem estado')
+    ->expect('App\Policies')
+    ->toBeClasses()
+    ->toBeReadonly();
 
 arch('jobs sao enfileiraveis e finais')
     ->expect('App\Jobs')
