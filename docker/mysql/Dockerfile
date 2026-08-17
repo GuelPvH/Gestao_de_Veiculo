@@ -8,7 +8,7 @@
 # ("World-writable config file ... is ignored").
 # =============================================================================
 
-FROM mysql:8.4
+FROM mysql:26.7
 
 COPY docker/mysql/conf.d/my.cnf              /etc/mysql/conf.d/zz-app.cnf
 COPY docker/mysql/init/01-testing-db.sh      /docker-entrypoint-initdb.d/01-testing-db.sh
