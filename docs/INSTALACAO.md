@@ -268,8 +268,9 @@ usuário administrador:
 make seed
 ```
 
-Isso cria 15 veículos e o usuário **`teste@gestao-veiculo.test`**, que já vem com
-permissão de admin — é com ele que você consegue abrir o `/pulse` e o `/horizon`.
+Isso cria 15 veículos e o usuário **`teste@gestao-veiculo.test`** (senha
+`password`), que já vem com permissão de admin — é com ele que você consegue
+abrir o `/pulse` e o `/horizon`.
 
 O comando é seguro de repetir: rodar de novo não duplica nada.
 

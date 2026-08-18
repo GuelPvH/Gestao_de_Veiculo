@@ -23,7 +23,15 @@ final class DatabaseSeeder extends Seeder
     {
         $user = User::firstOrCreate(
             ['email' => 'teste@gestao-veiculo.test'],
-            ['name' => 'Usuario de Teste'],
+            [
+                'name' => 'Usuario de Teste',
+                // `password` é NOT NULL e sem default: omitir a chave aqui
+                // faz o `db:seed` morrer com "Field 'password' doesn't have a
+                // default value" no MySQL (no SQLite dos testes o erro é a
+                // constraint NOT NULL). O cast `hashed` do model gera o hash
+                // antes do insert -- por isso o texto puro aqui.
+                'password' => 'password',
+            ],
         );
 
         // `is_admin` fica FORA do $fillable de propósito: mass assignment nessa
