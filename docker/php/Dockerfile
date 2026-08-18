@@ -96,6 +96,26 @@ RUN set -eux; \
     fi; \
     id www-data
 
+# Dois defeitos que só apareciam em runtime, ambos consequência do bind mount.
+#
+# 1. `git` recusava o repositório com "detected dubious ownership": o dono dos
+#    arquivos vem do host e não bate com o uid que roda os comandos aqui. Todo
+#    `composer` que consulta o git (audit, install, update) cuspia um `fatal:`
+#    antes de fazer o que foi pedido. O caminho dentro do container é sempre
+#    este, então marcá-lo como seguro no gitconfig do SISTEMA cobre www-data e
+#    root de uma vez — `--global` só valeria para o HOME de um deles.
+#
+# 2. `COMPOSER_HOME` já apontava para /tmp/composer, mas o diretório não existia
+#    na imagem: era criado pelo primeiro comando a rodar, normalmente root. Daí
+#    em diante o www-data não conseguia escrever e o Composer degradava para
+#    "Cannot create cache directory ... Proceeding without cache", rebaixando
+#    todo install a download completo. Criar na imagem, com o dono certo, tira
+#    a corrida de quem chega primeiro.
+RUN set -eux; \
+    git config --system --add safe.directory /var/www/html; \
+    mkdir -p "$COMPOSER_HOME/cache"; \
+    chown -R www-data:www-data "$COMPOSER_HOME"
+
 COPY --from=composer_bin /usr/bin/composer /usr/local/bin/composer
 
 COPY docker/php/fpm/www.conf        /usr/local/etc/php-fpm.d/www.conf
