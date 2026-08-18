@@ -80,6 +80,14 @@ abra uma nova seção `[Não lançado]` vazia.
   `MAIL_SCHEME` e a antiga não era lida por nada. Chave morta é pior que chave
   ausente — quem preenche acredita ter configurado.
 
+### Corrigido
+
+- A suíte de testes deixa de depender do build do front-end. O CI quebrava com
+  `ViteManifestNotFoundException` em todo teste que renderiza uma página, porque
+  `public/build/manifest.json` só é gerado na etapa que roda **depois** dos
+  testes. O Vite passa a ser desligado na suíte; o manifest continua verificado
+  onde importa — no smoke test, com os assets reais, e na imagem de produção.
+
 ---
 
 > As mudanças anteriores a este arquivo estão no histórico do Git. O changelog

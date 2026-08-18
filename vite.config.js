@@ -11,6 +11,27 @@ export default defineConfig({
         }),
     ],
 
+    css: {
+        preprocessorOptions: {
+            scss: {
+                // Todo build cuspia 310+ avisos de depreciação do Dart Sass, e
+                // nenhum vinha do nosso SCSS: a origem é `bootstrap/scss/*`, que
+                // ainda usa `@import`, as funções globais (`red()`, `green()`,
+                // `blue()`) e o `if()` antigo. Não temos como corrigir código de
+                // dependência, e o ruído tinha o efeito oposto ao de um aviso —
+                // enterrava qualquer depreciação nossa no meio de centenas de
+                // linhas. Silenciamos as quatro categorias por nome, e não com
+                // um `quietDeps` geral, para que uma categoria nova apareça.
+                silenceDeprecations: [
+                    'import',
+                    'global-builtin',
+                    'color-functions',
+                    'if-function',
+                ],
+            },
+        },
+    },
+
     server: {
         // Escuta em todas as interfaces do container — sozinho isso NÃO basta.
         host: '0.0.0.0',
