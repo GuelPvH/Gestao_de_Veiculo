@@ -11,7 +11,7 @@
 
 <!-- Passo a passo para o revisor reproduzir. Ex.:
      1. make up
-     2. Acesse http://localhost:8000/veiculos
+     2. Acesse a funcionalidade alterada no ambiente local
      3. Filtre por "em manutenção" e confirme que ... -->
 
 ## Checklist

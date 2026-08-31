@@ -1,7 +1,8 @@
 # Arquitetura e escopo do projeto
 
-Documentação completa: o que existe dentro deste repositório, o que cada peça faz
-e **por que** ela está aqui. Se você quer apenas colocar o projeto no ar, comece
+Documentação técnica: o que existe dentro deste repositório, o que cada peça faz
+e **por que** ela está aqui. O escopo funcional do produto está em
+**[ESCOPO.md](ESCOPO.md)**. Se você quer apenas colocar o projeto no ar, comece
 pela **[INSTALACAO.md](INSTALACAO.md)**.
 
 ---
@@ -29,10 +30,15 @@ pela **[INSTALACAO.md](INSTALACAO.md)**.
 
 ## 1. Visão geral
 
-Aplicação **Laravel 13** para gestão de frota de veículos, **integralmente
-containerizada**. O objetivo do repositório não é só "rodar um Laravel": é
-entregar um ambiente que já nasce com observabilidade, API, testes, análise
-estática, gates de commit e pipeline de CI.
+Aplicação **Laravel 13** que servirá como plataforma de gestão da software house
+**Deploy**, integralmente containerizada. O produto-alvo centraliza leads e
+orçamentos, projetos, serviços e conteúdo institucional, indicadores financeiros
+e configurações administrativas, além de sustentar o site público da empresa.
+
+O escopo funcional detalhado, derivado do Figma, está em
+**[ESCOPO.md](ESCOPO.md)**. O objetivo técnico do repositório não é só "rodar um
+Laravel": é entregar um ambiente que já nasce com observabilidade, API, testes,
+análise estática, gates de commit e pipeline de CI.
 
 ### O princípio que organiza tudo: *Container First*
 
@@ -55,13 +61,18 @@ todo mundo, inclusive para o CI.
 Há uma auditoria automatizada disso em `scripts/audit-container-first.sh`, que
 falha se aparecer comando de host na documentação.
 
-### A fatia de aplicação é demonstrativa
+### Estado atual da implementação
 
-O domínio de frota (`Vehicle`, `VehicleStatus`, `ListVehicles`…) existe para
-**provar que a infraestrutura funciona de ponta a ponta**: um teste real, um job
-processado pela fila, Bootstrap e Tom Select renderizando no navegador, uma API
-devolvendo JSON. Quando o domínio real do projeto começar, substitua essa fatia —
-ela não pretende ser o produto.
+O domínio de frota (`Vehicle`, `VehicleStatus`, `ListVehicles`…) é uma fatia
+demonstrativa anterior à definição do produto Deploy. Ele existe apenas para
+**provar que a infraestrutura funciona de ponta a ponta**: teste real, job
+processado pela fila, Bootstrap e Tom Select renderizando no navegador e API
+devolvendo JSON.
+
+Essa fatia **não pertence ao escopo funcional da Deploy**. Ela deve ser
+substituída gradualmente pelos módulos definidos em [ESCOPO.md](ESCOPO.md), em
+mudanças de código próprias e revisáveis. Esta atualização documental não altera
+nem remove a implementação existente.
 
 ---
 
@@ -93,7 +104,7 @@ ela não pretende ser o produto.
 ## 3. Arquitetura de containers
 
 ```
-rede: gestao-veiculo-ppw_net (bridge)
+rede: software-house-ppw_net (bridge)
 
   navegador ──:8000──▶ nginx ──fastcgi :9000──▶ app (php-fpm)
       │                  ▲                          │
@@ -102,7 +113,7 @@ rede: gestao-veiculo-ppw_net (bridge)
      vite ───────────────┘                                 ▲
                                                   queue ───┤ php artisan horizon
   profile "tools":                             scheduler ──┘ php artisan schedule:work
-    phpmyadmin :8082    mailpit :8026
+    ferramentas administrativas locais, sem endereço publicado
 ```
 
 São **9 serviços**. Os quatro primeiros são a aplicação; os dois seguintes são
@@ -139,14 +150,15 @@ existisse só no `app`, toda request viraria `404 File not found`.
 
 ### `mysql` — banco de dados
 
-MySQL 8.4 LTS. **Não publica porta para o host** — quem precisa de interface
-gráfica usa o phpMyAdmin.
+MySQL 8.4 LTS. **Não publica porta para o host**. O acesso administrativo é
+restrito ao ambiente local e sua localização não é registrada na documentação
+pública.
 
 - **Volume:** `mysql_data` (os dados sobrevivem a `make down`)
 - **Healthcheck:** um `SELECT 1` real contra o banco da aplicação, não apenas
   "o processo está vivo"
-- **Init:** `docker/mysql/init/01-testing-db.sh` cria o banco `gestao_veiculo_testing`
-  no primeiro boot
+- **Init:** `docker/mysql/init/01-testing-db.sh` prepara um banco de testes
+  isolado no primeiro boot
 
 ### `redis` — cache, sessão e fila
 
@@ -177,11 +189,11 @@ Roda `php artisan schedule:work`, substituindo a entrada de cron do host. É ele
 que dispara as tarefas de `routes/console.php` (resumo da frota a cada 5 min,
 backups diários).
 
-### `phpmyadmin` e `mailpit` — apoio (profile `tools`)
+### Ferramentas administrativas — apoio (profile `tools`)
 
-- **phpMyAdmin** (`:8082`) — interface web do banco
-- **Mailpit** (`:8026`) — captura **todo** e-mail que a aplicação enviar, para que
-  nada escape para um endereço real em desenvolvimento
+- interface administrativa do banco, restrita ao ambiente local;
+- captura local de e-mails, para que nada escape para um endereço real durante o
+  desenvolvimento.
 
 Ambos sobem porque o `.env` traz `COMPOSE_PROFILES=tools`. Deixe a variável vazia
 para não subi-los.
@@ -209,7 +221,7 @@ para não subi-los.
 
 ### Rede
 
-Uma bridge privada, `gestao-veiculo-ppw_net`. Os containers se enxergam **pelo
+Uma bridge privada, `software-house-ppw_net`. Os containers se enxergam **pelo
 nome do serviço** (`app`, `mysql`, `redis`) — é por isso que o `.env` traz
 `DB_HOST=mysql` e não um IP.
 
@@ -373,8 +385,8 @@ aqui, porque nada disso deve ir para o servidor.
 |---|---|
 | **laravel/framework** | O framework. |
 | **laravel/tinker** | REPL (`php artisan tinker`): abre um console PHP com a aplicação carregada, para inspecionar dados e testar trechos de código. |
-| **laravel/pulse** | Dashboard de performance em `/pulse`: requisições lentas, queries lentas, exceções, uso de fila. Grava em tabelas próprias no MySQL. |
-| **laravel/horizon** | Painel e supervisor das filas Redis em `/horizon`: quantos jobs rodando, throughput, falhas, retentativa. Substitui o `queue:work` cru. |
+| **laravel/pulse** | Dashboard de performance: requisições lentas, queries lentas, exceções e uso de fila. O endereço é definido no ambiente. |
+| **laravel/horizon** | Painel e supervisor das filas Redis: workers, throughput, falhas e retentativa. O endereço é definido no ambiente. |
 | **laravel/sanctum** | Autenticação da API. Dois modos: *cookie* (SPA no mesmo domínio) e *token* (app mobile, integração externa). |
 | **sentry/sentry-laravel** | Captura exceções de produção e envia para o painel do Sentry, com stack trace e contexto. |
 | **spatie/laravel-backup** | Backup do banco e dos arquivos, com limpeza e monitoramento agendados. |
@@ -556,7 +568,7 @@ ninguém do time fica sem os hooks por esquecimento.
 
 ## 11. Observabilidade
 
-### Pulse — `/pulse`
+### Painel de performance
 
 Dashboard de saúde da aplicação: requisições e queries lentas, exceções, uso de
 fila, usuários ativos. Grava em tabelas próprias no MySQL.
@@ -565,7 +577,7 @@ fila, usuários ativos. Grava em tabelas próprias no MySQL.
 painel expõe query lenta, exceção e volume de tráfego — informação de operação
 interna.
 
-### Horizon — `/horizon`
+### Painel de filas
 
 Painel das filas Redis: jobs em execução, throughput, falhas, retentativa manual.
 Protegido pelo gate `viewHorizon`, mesmo critério.
@@ -589,20 +601,14 @@ Configuração relevante:
 configurado, mas só reporta de fato quando o DSN for preenchido. Nenhuma
 credencial foi inventada.
 
-### Health checks — dois níveis
+### Health checks
 
-| Rota | Responde |
-|---|---|
-| `/up` | "O PHP está de pé" (nativa do Laravel) |
-| `/up/deep` | "A aplicação está funcional": app + **banco** + **Redis** |
+Existem verificações em níveis diferentes: uma confirma que a aplicação responde
+e outra valida suas dependências. Endereços e formatos de resposta são definidos
+no ambiente e não são publicados nesta documentação.
 
-`/up/deep` devolve `200` com `{"app":true,"db":true,"redis":true}`, ou **`503`** se
-qualquer dependência cair.
-
-> **Por que a rota profunda existe:** um load balancer confiando só no `/up`
-> continuaria mandando tráfego para uma instância com o MySQL fora do ar — o PHP
-> responde, mas a aplicação não funciona. Comportamento verificado na prática:
-> parando o container do MySQL, a rota passa a devolver 503.
+O balanceador deve usar a verificação apropriada para não encaminhar tráfego a
+uma instância cuja aplicação responde, mas perdeu acesso às dependências.
 
 ### Log estruturado
 
@@ -735,8 +741,9 @@ O pipeline tem **três jobs**, e a divisão é proposital:
 > toca nginx, FPM, MySQL ou Redis de verdade. O bug de 502 causado pelo nginx
 > cachear o IP do container passou por 32 testes verdes — só apareceu ao subir a
 > stack. O smoke test cobre exatamente essa lacuna: verifica as rotas, confirma
-> que `/pulse` **nega** acesso anônimo, derruba o MySQL de propósito para exigir
-> o 503 do `/up/deep`, e estoura o rate limit para exigir o 429.
+> que os painéis administrativos negam acesso anônimo, simula a indisponibilidade
+> do banco para exigir resposta não saudável e estoura o rate limit para exigir
+> o 429.
 
 > **Por que `producao` existe separado.** O stage `prod` roda `config:cache` e
 > `route:cache` no build, e cada um é um portão que os testes não atravessam:
@@ -770,7 +777,7 @@ funcionalidade).
 | **Rector nunca aplica no CI** | Refactor automático sem revisão humana é desastre. Só `--dry-run`. |
 | **Caches do PHPStan/Rector em `/tmp` do container** | Em `storage/` (bind mount + OneDrive) a análise passava de 10 minutos; em `/tmp`, ~52 s. |
 | **`bash` só no stage `dev`** | `docker exec -it ... bash` é o reflexo de todo mundo, e a base Alpine só tem `sh`. A imagem de produção continua enxuta. |
-| **`container_name` com prefixo escolhido pelo usuário** | O nome gerado pelo Compose (`gestao-veiculo-ppw-app-1`) é longo demais para digitar num `docker exec`. O prefixo vem de `CONTAINER_PREFIX` no `.env` e é **livre**; sem ele, cai em `COMPOSE_PROJECT_NAME` e depois no nome da pasta — o padrão do Docker. Custo: nome de container é único por host, então duas cópias simultâneas exigem prefixos diferentes. |
+| **`container_name` com prefixo escolhido pelo usuário** | O nome gerado pelo Compose (`software-house-ppw-app-1`) é longo demais para digitar num `docker exec`. O prefixo vem de `CONTAINER_PREFIX` no `.env` e é **livre**; sem ele, cai em `COMPOSE_PROJECT_NAME` e depois no nome da pasta — o padrão do Docker. Custo: nome de container é único por host, então duas cópias simultâneas exigem prefixos diferentes. |
 | **`resolver` DNS no nginx** | Com hostname literal, o nginx cacheia o IP no boot e devolve 502 depois de recriar o `app`. Com variável + resolver, ele re-resolve a cada request. |
 | **`before_send` como classe, não closure** | `config:cache` usa `var_export`, que não serializa closure — quebrava o build de produção. |
 | **Stage `assets` compilando o front-end na imagem** | O `.dockerignore` exclui `public/build/` do contexto (correto: artefato não é fonte), então a imagem `prod` subia **sem CSS/JS** e o `@vite()` lançava `ViteManifestNotFoundException` em toda página. Compilar num stage Node e copiar só o resultado mantém o Container First e deixa Node fora da imagem final. |
@@ -807,13 +814,14 @@ veja a [INSTALACAO.md](INSTALACAO.md).
 
 É rápido, mas **SQLite mente** se o projeto passar a depender de recurso específico
 do MySQL (coluna JSON, fulltext, `ENUM`). Nesse caso aponte `DB_CONNECTION` e
-`DB_DATABASE` do `phpunit.xml` para `gestao_veiculo_testing`, que já é criado no
-primeiro boot do MySQL.
+`DB_DATABASE` do `phpunit.xml` para um banco de testes isolado, configurado
+somente no ambiente local.
 
-### Redis sem senha
+### Credenciais de serviços internos
 
-Aceitável **em desenvolvimento**: a porta não é publicada e a rede é uma bridge
-privada. **Não replique isso em produção.**
+Devem ser fornecidas pelo ambiente local e, em produção, pelo gerenciador de
+segredos da plataforma. A documentação pública não registra valores nem informa
+se um serviço específico está operando sem autenticação.
 
 ### Avisos "normais" no log
 
@@ -840,8 +848,9 @@ tiver acesso:
 
 ## Fora de escopo
 
-Deliberadamente **não** incluídos: Laravel Octane, filas com Swoole, multi-região,
-feature flags (Pennant).
+Os limites funcionais do produto estão em [ESCOPO.md](ESCOPO.md). Do ponto de
+vista técnico, estão deliberadamente **não** incluídos: Laravel Octane, filas
+com Swoole, multi-região e feature flags (Pennant).
 
 > Esses itens só compensam a complexidade quando existe gargalo real **medido**.
 > Adicionar antes disso é o mesmo erro de instalar uma linguagem inteira "porque

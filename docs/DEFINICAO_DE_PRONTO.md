@@ -37,7 +37,7 @@ Use como **última leitura antes de abrir o PR**. O checklist do próprio PR
 
 ## 3. Está legível para quem não escreveu
 
-- [ ] Nome diz a intenção: `ListVehicles`, não `VehicleHandler`; `$availableOnly`,
+- [ ] Nome diz a intenção: `ListLeads`, não `LeadHandler`; `$openOnly`,
       não `$flag`.
 - [ ] Identificadores em inglês, texto para pessoa em português — ver
       [GLOSSARIO.md](GLOSSARIO.md).

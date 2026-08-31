@@ -1,4 +1,19 @@
-# Gestão de Veículo — ambiente Laravel 100% Docker
+# Deploy — Plataforma de Gestão da Software House
+
+A plataforma da **Deploy** centraliza a operação da software house: captação e
+acompanhamento de leads, propostas, projetos, serviços e conteúdo institucional,
+indicadores financeiros e configurações administrativas.
+
+O produto também contempla o site público da empresa, com apresentação dos
+serviços, projetos, canais de contato e solicitação de orçamento. O escopo
+funcional completo está em **[docs/ESCOPO.md](docs/ESCOPO.md)** e foi definido a
+partir do design privado aprovado pela equipe da Deploy.
+
+> **Importante:** o Figma e o documento de escopo representam o produto-alvo.
+> A presença de uma funcionalidade nesses materiais não significa que ela já
+> esteja implementada no repositório.
+
+## Ambiente de desenvolvimento Laravel 100% Docker
 
 > **PHP, Composer, Node, npm, MySQL e Redis não precisam estar instalados na sua máquina.**
 > Só Docker, Docker Compose, Git e um editor.
@@ -13,8 +28,9 @@ errado — abra uma issue.
 
 | Documento | Para quem |
 |---|---|
+| **[docs/ESCOPO.md](docs/ESCOPO.md)** | Visão do produto, públicos, módulos, fluxos principais, limites e estado atual. |
 | **[docs/INSTALACAO.md](docs/INSTALACAO.md)** | **Começa aqui.** Passo a passo do zero: WSL2, Docker Desktop, baixar e rodar o projeto, entrar no container. |
-| **[docs/ARQUITETURA.md](docs/ARQUITETURA.md)** | Escopo completo: cada serviço, cada pacote instalado e o porquê de cada decisão. |
+| **[docs/ARQUITETURA.md](docs/ARQUITETURA.md)** | Arquitetura técnica: cada serviço, cada pacote instalado e o porquê de cada decisão. |
 | **[CONTRIBUTING.md](CONTRIBUTING.md)** | Vai desenvolver? Fluxo de branch, commits, hooks, padrões de código e testes. |
 | **[docs/adr/](docs/adr/README.md)** | *Por quê* de cada decisão que é cara de reverter — e como registrar a próxima. Leia antes de propor mudar um padrão. |
 | **[SECURITY.md](SECURITY.md)** | Como reportar vulnerabilidade e o que é aceitável só em desenvolvimento. |
@@ -30,10 +46,10 @@ make setup               # ou .\make.ps1 setup no PowerShell
 Depois abra <http://localhost:8000>. Para entrar no container:
 
 ```bash
-docker exec -it veiculo_app bash
+docker exec -it software-house_app bash
 ```
 
-> `veiculo` é só o prefixo sugerido no `.env.example`. Você escolhe o seu em
+> `software-house` é o prefixo sugerido no `.env.example`. Você escolhe o seu em
 > `CONTAINER_PREFIX` — vira `<prefixo>_app`, `<prefixo>_mysql`, etc.
 
 ---
@@ -55,7 +71,7 @@ snap: o snap quebra bind mount, que é como o código chega nos containers.
 
 ```bash
 git clone <url-do-repositorio>
-cd Gestao_de_Veiculo_Programacao_Para_Web
+cd Software_House
 ```
 
 **Linux / macOS / WSL:**
@@ -88,7 +104,7 @@ docker compose exec -u www-data app php artisan migrate --force
 docker compose run  --rm vite npm run build
 ```
 
-Para popular a frota com dados de exemplo:
+Para popular o scaffold técnico atual com dados de exemplo:
 
 ```bash
 make seed          # Windows: .\make.ps1 seed
@@ -102,24 +118,19 @@ make seed          # Windows: .\make.ps1 seed
 |---|---|---|
 | Aplicação | http://localhost:8000 | porta em `APP_PORT` |
 | Vite (dev server / HMR) | http://localhost:5175 | porta em `VITE_PORT` |
-| phpMyAdmin | http://localhost:8082 | profile `tools`, publicado só em `127.0.0.1` |
-| Mailpit | http://localhost:8026 | profile `tools`, captura todo e-mail |
-| Pulse | http://localhost:8000/pulse | dashboard de observabilidade — requer `is_admin` |
-| Horizon | http://localhost:8000/horizon | dashboard de filas Redis — requer `is_admin` |
 | Health check raso | http://localhost:8000/up | só confirma que o PHP responde |
-| Health check profundo | http://localhost:8000/up/deep | verifica app + DB + Redis — 503 se algo falhar |
 
 Conflito de porta se resolve **no `.env`**, nunca no `compose.yaml`.
 
-phpMyAdmin e Mailpit sobem junto porque o `.env` traz `COMPOSE_PROFILES=tools`.
-Deixe essa variável vazia para não subi-los.
+Ferramentas administrativas de desenvolvimento são opcionais. Consulte a
+configuração local do ambiente e nunca publique seus endereços ou portas.
 
 ---
 
 ## 4. Arquitetura
 
 ```
-rede: gestao-veiculo-ppw_net (bridge)
+rede: software-house-ppw_net (bridge)
 
   navegador  ──:8000──▶  nginx  ──fastcgi :9000──▶  app (php-fpm)
       │                    ▲                            │
@@ -127,7 +138,7 @@ rede: gestao-veiculo-ppw_net (bridge)
       ▼                    │  do código                 └──▶ redis  :6379  [volume]
      vite ──────────────────┘                                  ▲
                                                      horizon ──┤  substitui queue:work
-  profile "tools":  phpmyadmin :8082   mailpit :8026  scheduler ┘ schedule:work
+  profile "tools":  ferramentas administrativas locais  scheduler ┘ schedule:work
 ```
 
 O bind mount do código está no `nginx` **e** no `app`: o nginx resolve o
@@ -207,9 +218,9 @@ make check      # roda os quatro; usa pint --test (não altera arquivo), o modo 
 
 Testes rodam contra **SQLite em memória**, nunca contra o banco de
 desenvolvimento. Se o projeto passar a depender de recurso específico do MySQL
-(coluna JSON, fulltext, `ENUM`), o SQLite mente — nesse caso aponte
-`DB_CONNECTION`/`DB_DATABASE` do `phpunit.xml` para `gestao_veiculo_testing`,
-que já é criado no primeiro boot do MySQL.
+(coluna JSON, fulltext, `ENUM`), configure um banco de teste isolado por meio de
+variáveis locais não versionadas. Nunca registre nomes, usuários ou senhas reais
+na documentação.
 
 Cobertura (usa PCOV, já instalado — **mínimo 80%**, o mesmo do CI):
 
@@ -222,24 +233,18 @@ por vez sem nada reclamar.
 
 ---
 
-## 6a. API
+## 6a. API demonstrativa atual
 
-A API REST fica em `/api/`. Rotas públicas (leitura) não exigem autenticação.
-Escrita (store, update, destroy) exige token Sanctum.
+> Esta API pertence à fatia técnica usada para validar a infraestrutura do
+> repositório. Ela **não representa o escopo funcional da plataforma Deploy** e
+> será substituída gradualmente pelos módulos descritos em
+> [docs/ESCOPO.md](docs/ESCOPO.md). Os exemplos abaixo permanecem documentados
+> apenas porque refletem o código existente neste momento.
 
-```bash
-# Listar veículos (público)
-curl http://localhost:8000/api/vehicles
-
-# Criar token para testes
-make artisan c="tinker --execute=\"echo User::first()->createToken('test')->plainTextToken;\""
-
-# Criar veículo (autenticado)
-curl -X POST http://localhost:8000/api/vehicles \
-  -H 'Authorization: Bearer <token>' \
-  -H 'Content-Type: application/json' \
-  -d '{"plate":"ABC-1234","brand":"Toyota","model":"Corolla","year":2024}'
-```
+A API demonstrativa fica sob o prefixo `/api/`. Endpoints de escrita exigem
+autenticação. Tokens devem ser gerados apenas no ambiente local, armazenados em
+gerenciador de segredos e nunca copiados para documentação, issues ou exemplos
+versionados.
 
 Rate limit: 120 req/min autenticado, 20 req/min anônimo.
 
@@ -261,12 +266,12 @@ controller. O raciocínio completo está no ADR de validação e autorização, 
 
 ## 6b. Observabilidade
 
-- **Pulse** (`/pulse`): dashboard de requests, jobs, exceções. Acesso restrito a
-  usuários com `is_admin = true`.
-- **Horizon** (`/horizon`): dashboard de filas Redis. Substitui o `queue:work`
-  básico, com auto-balanceamento e retry. Mesmo gate de acesso.
-- **Health check profundo** (`/up/deep`): retorna 200 com JSON se app, DB e
-  Redis estão funcionais; 503 se qualquer um falhar. Use no load balancer.
+- **Painel de performance**: acompanha requests, jobs e exceções, com acesso
+  administrativo e endereço definido somente no ambiente.
+- **Painel de filas**: oferece auto-balanceamento, retry e acompanhamento dos
+  workers, também com acesso administrativo.
+- **Health check profundo**: verifica aplicação e dependências. Seu endereço e
+  formato de resposta não são publicados neste documento.
 - **Log estruturado**: em dev, log legível no stderr (`LOG_CHANNEL_STACK=stderr_pretty`).
   Em produção, JSON indexável (`stderr_json`).
 - **Sentry**: captura exceções em produção. Requer DSN — veja §11.
@@ -405,9 +410,9 @@ ou, mais simples, gere senhas sem `$`.
 - **Debugbar** está em `require-dev` e vem **desligada**
   (`DEBUGBAR_ENABLED=false`). Ligue só para depurar: a aba *Queries* é o
   detector de N+1, que é o problema de performance nº 1 em Laravel.
-- **A porta 3306 não é publicada.** A aplicação fala `mysql:3306` pela rede
-  interna e o acesso humano é pelo phpMyAdmin. Se precisar de um cliente
-  externo, publique a porta no `compose.yaml` conscientemente.
+- **A porta do banco não é publicada.** O acesso administrativo deve ocorrer
+  somente no ambiente local e por ferramentas autorizadas pela equipe. Nunca
+  documente ou publique endereço, usuário ou senha desse acesso.
 - **Projeto em pasta sincronizada (OneDrive/Dropbox/Drive).** Funciona, mas o
   serviço de sync tenta acompanhar `storage/logs`, `storage/framework` e
   `public/build`. Se notar lentidão ou conflitos, mova o repositório para um

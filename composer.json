@@ -1,9 +1,9 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "gestao-veiculo/programacao-para-web",
+    "name": "software-house/programacao-para-web",
     "type": "project",
-    "description": "Gestao de Veiculo - ambiente Laravel integralmente containerizado.",
-    "keywords": ["laravel", "docker", "gestao-de-veiculo"],
+    "description": "Software House - ambiente Laravel integralmente containerizado.",
+    "keywords": ["laravel", "docker", "software-house"],
     "license": "MIT",
     "require": {
         "php": "^8.4",

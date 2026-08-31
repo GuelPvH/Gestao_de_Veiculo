@@ -22,7 +22,7 @@ final class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $user = User::firstOrCreate(
-            ['email' => 'teste@gestao-veiculo.test'],
+            ['email' => 'teste@software-house.test'],
             [
                 'name' => 'Usuario de Teste',
                 // `password` é NOT NULL e sem default: omitir a chave aqui

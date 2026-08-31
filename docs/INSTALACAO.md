@@ -149,8 +149,8 @@ do CMD.
 ```bash
 mkdir -p ~/projetos
 cd ~/projetos
-git clone <url-do-repositorio> gestao-veiculo
-cd gestao-veiculo
+git clone <url-do-repositorio> software-house
+cd software-house
 ```
 
 Confirme que você está no lugar certo:
@@ -159,7 +159,7 @@ Confirme que você está no lugar certo:
 pwd
 ```
 
-Precisa mostrar algo como `/home/seu-usuario/projetos/gestao-veiculo`.
+Precisa mostrar algo como `/home/seu-usuario/projetos/software-house`.
 
 > ### ⚠️ Nunca clone em `/mnt/c/...`
 >
@@ -167,8 +167,8 @@ Precisa mostrar algo como `/home/seu-usuario/projetos/gestao-veiculo`.
 > ali te devolve exatamente a lentidão que o WSL2 existe para resolver — e se for
 > dentro do OneDrive, junta os dois problemas.
 >
-> - ✅ Certo: `/home/seu-usuario/projetos/gestao-veiculo`
-> - ❌ Errado: `/mnt/c/Users/voce/OneDrive/Documentos/gestao-veiculo`
+> - ✅ Certo: `/home/seu-usuario/projetos/software-house`
+> - ❌ Errado: `/mnt/c/Users/voce/OneDrive/Documentos/software-house`
 >
 > O disco do WSL2 fica em `AppData\Local\Packages\...\ext4.vhdx`, que o OneDrive
 > não sincroniza. Os dois convivem numa boa, desde que você não clone dentro da
@@ -203,9 +203,8 @@ DB_PASSWORD=
 MYSQL_ROOT_PASSWORD=
 ```
 
-> `REDIS_PASSWORD=null` já vem preenchido e **deve continuar assim** em
-> desenvolvimento: a porta do Redis não é publicada e a rede é uma bridge
-> privada. Em produção isso muda — veja a ARQUITETURA.md.
+Configure qualquer credencial adicional somente no `.env` local. Valores reais
+nunca devem aparecer neste documento, em commits, issues ou mensagens de PR.
 
 Gere senhas aleatórias sem sair do terminal:
 
@@ -225,11 +224,11 @@ A `APP_KEY` fica vazia por enquanto — o `make setup` gera ela no próximo pass
 ### Escolha o nome dos seus containers (opcional)
 
 ```env
-CONTAINER_PREFIX=veiculo
+CONTAINER_PREFIX=software-house
 ```
 
-É o nome que você vai digitar todo dia (`docker exec -it veiculo_app bash`).
-Troque por `frota`, `meuapp` ou o que preferir — detalhes na
+É o nome que você vai digitar todo dia (`docker exec -it software-house_app bash`).
+Troque por `deploy`, `meuapp` ou o que preferir — detalhes na
 [seção 9](#9-entrar-dentro-do-container).
 
 ### Portas ocupadas
@@ -240,8 +239,7 @@ Se você já tem outra coisa usando a porta 8000, mude **no `.env`**, nunca no
 ```env
 APP_PORT=8001
 VITE_PORT=5176
-PHPMYADMIN_PORT=8083
-MAILPIT_PORT=8027
+# Ferramentas administrativas: defina portas somente no `.env` local
 ```
 
 ---
@@ -261,16 +259,17 @@ Nas próximas, segundos.
 
 ### Dados de exemplo (opcional, mas recomendado na 1ª vez)
 
-O `setup` deixa o banco **vazio**. Para popular com uma frota de exemplo e um
-usuário administrador:
+O `setup` deixa o banco **vazio**. Para popular a fatia técnica demonstrativa
+atual e criar um usuário administrador:
 
 ```bash
 make seed
 ```
 
-Isso cria 15 veículos e o usuário **`teste@gestao-veiculo.test`** (senha
-`password`), que já vem com permissão de admin — é com ele que você consegue
-abrir o `/pulse` e o `/horizon`.
+Enquanto o scaffold atual ainda não for substituído pelos módulos da Deploy,
+isso cria registros demonstrativos locais. As credenciais administrativas não
+são documentadas nem versionadas: crie o usuário localmente, com senha exclusiva,
+seguindo o procedimento interno da equipe.
 
 O comando é seguro de repetir: rodar de novo não duplica nada.
 
@@ -311,15 +310,15 @@ Os 9 serviços precisam aparecer como `Up`, e os que têm healthcheck como
 
 ```
 NAME                  STATUS
-veiculo_app           Up (healthy)
-veiculo_mysql         Up (healthy)
-veiculo_nginx         Up (healthy)
-veiculo_queue         Up (healthy)
-veiculo_redis         Up (healthy)
-veiculo_scheduler     Up (healthy)
-veiculo_vite          Up
-veiculo_phpmyadmin    Up
-veiculo_mailpit       Up (healthy)
+software-house_app           Up (healthy)
+software-house_mysql         Up (healthy)
+software-house_nginx         Up (healthy)
+software-house_queue         Up (healthy)
+software-house_redis         Up (healthy)
+software-house_scheduler     Up (healthy)
+software-house_vite          Up
+<ferramenta-admin>           Up
+<captura-email-local>        Up (healthy)
 ```
 
 ### Abra no navegador
@@ -327,27 +326,11 @@ veiculo_mailpit       Up (healthy)
 | Endereço | O que é |
 |---|---|
 | <http://localhost:8000> | **A aplicação** |
-| <http://localhost:8000/up/deep> | Health check — deve devolver `{"app":true,"db":true,"redis":true}` |
-| <http://localhost:8000/api/vehicles> | API REST em JSON |
-| <http://localhost:8082> | phpMyAdmin (banco de dados) |
-| <http://localhost:8026> | Mailpit (todo e-mail enviado cai aqui) |
-| <http://localhost:8000/horizon> | Painel das filas |
-| <http://localhost:8000/pulse> | Painel de performance (pede usuário admin) |
+| API local | Consulte as rotas registradas no próprio ambiente de desenvolvimento |
+| Ferramentas administrativas | Consulte a configuração local; endereços e portas não são publicados |
 
-Teste rápido pelo terminal:
-
-```bash
-curl http://localhost:8000/up/deep
-```
-
-Resposta esperada:
-
-```json
-{"app":true,"db":true,"redis":true}
-```
-
-Se algum vier `false`, o serviço correspondente está fora — veja o
-[Troubleshooting](#12-troubleshooting).
+Para validar serviços internos ou rotas operacionais, siga o procedimento local
+da equipe. Esses endereços não são mantidos na documentação pública.
 
 ---
 
@@ -361,17 +344,17 @@ shell dentro do container.
 Antes do comando, entenda de onde vem o nome. No `.env` existe:
 
 ```env
-CONTAINER_PREFIX=veiculo
+CONTAINER_PREFIX=software-house
 ```
 
 Esse valor é **uma sugestão, não uma regra**. Troque pelo que fizer sentido para
-você — `frota`, `meuapp`, `gv`, qualquer coisa. Os containers passam a se chamar
+você — `deploy`, `meuapp`, qualquer coisa. Os containers passam a se chamar
 `<prefixo>_app`, `<prefixo>_mysql`, e assim por diante:
 
 | `CONTAINER_PREFIX` | Container da aplicação | Comando |
 |---|---|---|
-| `veiculo` (sugerido) | `veiculo_app` | `docker exec -it veiculo_app bash` |
-| `frota` | `frota_app` | `docker exec -it frota_app bash` |
+| `software-house` (sugerido) | `software-house_app` | `docker exec -it software-house_app bash` |
+| `deploy` | `deploy_app` | `docker exec -it deploy_app bash` |
 | `meuapp` | `meuapp_app` | `docker exec -it meuapp_app bash` |
 
 Depois de mudar o prefixo, aplique com:
@@ -384,18 +367,18 @@ make down && make up
 > `COMPOSE_PROJECT_NAME` e, na falta dele, no nome da pasta — que é exatamente o
 > comportamento padrão do Docker.
 
-Os exemplos daqui para frente usam `veiculo` só porque é o valor que vem no
+Os exemplos daqui para frente usam `software-house` porque é o valor que vem no
 `.env.example`. **Troque pelo seu.**
 
 ### O jeito direto
 
 ```bash
-docker exec -it veiculo_app bash
+docker exec -it software-house_app bash
 ```
 
 - `docker exec` — executa um comando num container que **já está rodando**
 - `-it` — modo interativo com terminal (é o que te dá o prompt)
-- `veiculo_app` — o **nome do container** (o seu prefixo + `_app`)
+- `software-house_app` — o **nome do container** (o seu prefixo + `_app`)
 - `bash` — o shell que você quer abrir
 
 Você cai em `/var/www/html`, que é a raiz do projeto dentro do container. Para
@@ -404,7 +387,7 @@ sair, digite `exit`.
 Se preferir `sh`, também funciona:
 
 ```bash
-docker exec -it veiculo_app sh
+docker exec -it software-house_app sh
 ```
 
 > **Por que `bash` funciona aqui.** A imagem é Alpine Linux, que por padrão só tem
@@ -414,19 +397,19 @@ docker exec -it veiculo_app sh
 
 ### Os nove containers
 
-Trocando `veiculo` pelo seu prefixo:
+Trocando `software-house` pelo seu prefixo:
 
 | Container | Serviço |
 |---|---|
-| `veiculo_app` | PHP-FPM (a aplicação) |
-| `veiculo_nginx` | Servidor web |
-| `veiculo_mysql` | Banco de dados |
-| `veiculo_redis` | Cache / fila / sessão |
-| `veiculo_queue` | Worker das filas (Horizon) |
-| `veiculo_scheduler` | Agendador de tarefas |
-| `veiculo_vite` | Build do front-end |
-| `veiculo_phpmyadmin` | Interface do banco |
-| `veiculo_mailpit` | Captura de e-mails |
+| `software-house_app` | PHP-FPM (a aplicação) |
+| `software-house_nginx` | Servidor web |
+| `software-house_mysql` | Banco de dados |
+| `software-house_redis` | Cache / fila / sessão |
+| `software-house_queue` | Worker das filas (Horizon) |
+| `software-house_scheduler` | Agendador de tarefas |
+| `software-house_vite` | Build do front-end |
+| `<ferramenta-admin>` | Interface administrativa local, quando habilitada |
+| `<captura-email-local>` | Captura local de e-mails, quando habilitada |
 
 Para ver os nomes reais que estão no ar na sua máquina:
 
@@ -460,9 +443,9 @@ documentação e scripts compartilhados.
 ### Entrar em outros containers
 
 ```bash
-docker exec -it veiculo_mysql bash   # banco de dados
-docker exec -it veiculo_nginx sh     # nginx (Alpine puro, sem bash)
-docker exec -it veiculo_vite sh      # Node/Vite
+docker exec -it software-house_mysql bash   # banco de dados
+docker exec -it software-house_nginx sh     # nginx (Alpine puro, sem bash)
+docker exec -it software-house_vite sh      # Node/Vite
 ```
 
 ### Rodar um comando sem abrir shell
@@ -579,7 +562,7 @@ make artisan c="key:generate"
 make artisan c="config:clear"
 ```
 
-### `{"db":false}` no `/up/deep`
+### O health check indica indisponibilidade do banco
 
 O MySQL não subiu. Veja o motivo:
 

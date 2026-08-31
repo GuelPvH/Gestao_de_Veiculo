@@ -1,0 +1,27 @@
+title = "Software House - secret scanning"
+
+[extend]
+useDefault = true
+
+[[rules]]
+id = "project-sensitive-env-value"
+description = "Valor literal atribuído a variável sensível do projeto"
+regex = '''(?i)(?:DB_PASSWORD|MYSQL_ROOT_PASSWORD|REDIS_PASSWORD|APP_KEY|SENTRY_LARAVEL_DSN|AWS_SECRET_ACCESS_KEY|GITHUB_TOKEN|GITLEAKS_LICENSE)[ \t]*=[ \t]*["']?([^ \t\r\n"'#$]{8,})'''
+secretGroup = 1
+keywords = [
+    "DB_PASSWORD",
+    "MYSQL_ROOT_PASSWORD",
+    "REDIS_PASSWORD",
+    "APP_KEY",
+    "SENTRY_LARAVEL_DSN",
+    "AWS_SECRET_ACCESS_KEY",
+    "GITHUB_TOKEN",
+    "GITLEAKS_LICENSE",
+]
+
+[[rules]]
+id = "database-url-with-credentials"
+description = "URL de banco de dados com usuário e senha embutidos"
+regex = '''(?i)(?:mysql|postgres(?:ql)?|redis|mongodb(?:\+srv)?):\/\/[^:\s\/]+:([^@\s\/]{4,})@'''
+secretGroup = 1
+keywords = ["mysql://", "postgres://", "postgresql://", "redis://", "mongodb://", "mongodb+srv://"]

@@ -22,7 +22,7 @@ use Illuminate\Support\Facades\Hash;
 it('semeia o usuario administrador com credenciais utilizaveis', function (): void {
     $this->seed(DatabaseSeeder::class);
 
-    $user = User::query()->where('email', 'teste@gestao-veiculo.test')->sole();
+    $user = User::query()->where('email', 'teste@software-house.test')->sole();
 
     expect($user->is_admin)->toBeTrue()
         ->and(Hash::check('password', $user->password))->toBeTrue();

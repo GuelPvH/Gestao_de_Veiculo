@@ -35,6 +35,9 @@
                 "options": { "maxSize": "5M" }
             },
             {
+                "action": "bash scripts/audit-sensitive-files.sh"
+            },
+            {
                 "action": "CaptainHook.File.BlockSecrets",
                 "options": {
                     "entropyThreshold": 0,

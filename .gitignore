@@ -1,8 +1,8 @@
 *.log
 .DS_Store
 .env
-.env.backup
-.env.production
+.env.*
+!.env.example
 .phpactor.json
 .phpunit.result.cache
 /.codex
@@ -21,13 +21,31 @@
 /storage/*.key
 /storage/pail
 /vendor
-
 # Debugbar grava centenas de arquivos JSON de debug em storage/debugbar/.
 # Sem esta linha eles acabam commitados.
 /storage/debugbar
 
 # Dumps gerados por `make db-dump`
 /dump-*.sql
+*.sql
+*.sql.gz
+*.dump
+*.bak
+*.backup
+*.sqlite
+*.sqlite3
+*.db
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+auth.json
+.pypirc
+.netrc
+id_rsa
+id_ed25519
 Homestead.json
 Homestead.yaml
 Thumbs.db

@@ -75,7 +75,7 @@ Tipos aceitos: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`,
 `chore`, `ci`, `build`, `revert`.
 
 ```bash
-git commit -m "feat(frota): filtra veiculos por placa"
+git commit -m "feat(leads): filtra leads por status"
 git commit -m "fix: corrige 502 apos recriar o container do app"
 ```
 
@@ -183,7 +183,7 @@ Motivo completo no
 ### Nomes
 
 Identificador em inglês, texto para pessoa em português. Os termos do domínio
-(veículo, frota, placa, situação) têm um nome só, definido em
+(lead, proposta, projeto, serviço, transação) têm um nome só, definido em
 **[docs/GLOSSARIO.md](docs/GLOSSARIO.md)** — consulte antes de batizar coisa nova,
 e acrescente o termo novo ali no mesmo PR.
 
@@ -211,7 +211,7 @@ make artisan c="test --filter=VehicleApi"
 Os testes usam **SQLite em memória**, então são rápidos e não tocam o banco de
 desenvolvimento. Se a sua feature depender de recurso específico do MySQL (coluna
 JSON, fulltext, `ENUM`), o SQLite mente — nesse caso aponte o `phpunit.xml` para
-o banco `gestao_veiculo_testing`, que já existe.
+um banco de testes isolado, configurado somente no ambiente local.
 
 ### O que precisa de teste
 

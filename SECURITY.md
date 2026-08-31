@@ -38,18 +38,56 @@ mesmo que o push tenha sido revertido em seguida.
 - Análise estática em nível 8, sem baseline
 - Arch tests barram `env()` fora de `config/` e `dd()`/`dump()` esquecidos
 - API com rate limit em todas as rotas, inclusive autenticação
-- `/pulse` e `/horizon` protegidos por gate de administrador
+- painéis de observabilidade protegidos por autorização administrativa
 - API responde via Resource, nunca com o Model direto
+
+## Proteções automatizadas contra vazamento
+
+O workflow `.github/workflows/secret-scan.yml` roda em pull requests, pushes nas
+branches principais, execução manual e agenda semanal. Ele:
+
+- faz checkout do histórico completo sem persistir a credencial do GitHub;
+- bloqueia `.env`, dumps, bancos locais, chaves privadas e arquivos conhecidos
+  de autenticação;
+- valida que `.env.example` não recebeu valor em campo sensível;
+- valida que `.npmrc` não contém autenticação;
+- exige SHA completo e imutável em todas as Actions externas;
+- executa Gitleaks sobre o histórico Git em imagem fixada por digest;
+- executa o scanner sem rede, com filesystem somente leitura, sem capacidades
+  Linux e sem fornecer token ou licença ao processo;
+- redige os valores encontrados e não publica comentários nem artefatos.
+
+As exceções em `.gitleaksignore` devem usar fingerprint completo e só podem ser
+incluídas depois de o achado ser classificado sem revelar o valor. Uma exceção
+por regex, diretório ou regra inteira é proibida porque também esconderia
+vazamentos futuros.
+
+## Higiene para repositório público
+
+Não devem ser versionados, inclusive em arquivos Markdown:
+
+- usuários, e-mails ou senhas de acesso, mesmo que sejam de teste;
+- tokens, chaves, cookies, DSNs ou strings de conexão;
+- endereços e portas de painéis administrativos ou bancos de dados;
+- links de documentos internos, arquivos privados de design ou dashboards;
+- dados pessoais, nomes de clientes ou informações comerciais reais;
+- saídas de terminal que contenham variáveis de ambiente.
+
+Use placeholders descritivos, como `<usuario-local>` e `<endereco-interno>`, sem
+copiar o valor real. Nomes de variáveis vazias em `.env.example` podem ser
+versionados; os valores devem vir do ambiente local ou do gerenciador de segredos.
 
 ## Limites conhecidos do ambiente de desenvolvimento
 
 Aceitáveis **apenas em desenvolvimento**. Não replique em produção:
 
-- **Redis sem senha** — a porta não é publicada e a rede é uma bridge privada
+- **serviços locais simplificados** — precisam receber autenticação e isolamento
+  apropriados antes de qualquer implantação
 - **`APP_DEBUG=true`** — expõe stack trace detalhado
 - **Debugbar habilitada** — expõe queries e dados de request
-- **Mailpit captura todo e-mail** — nada sai de verdade, que é o objetivo aqui
-- **phpMyAdmin exposto** em `127.0.0.1` — só alcançável da própria máquina
+- **Ferramentas administrativas de desenvolvimento** — devem permanecer
+  restritas à máquina local e nunca ter endereço, porta ou credencial publicados
 
-Em produção: `APP_DEBUG=false`, Redis com senha, sem Debugbar, sem phpMyAdmin,
-`SENTRY_LARAVEL_DSN` preenchido e backup apontando para storage remoto.
+Em produção: `APP_DEBUG=false`, serviços internos autenticados, ferramentas de
+desenvolvimento desativadas, segredos fornecidos pelo ambiente de execução e
+backup apontando para armazenamento remoto autorizado.

@@ -28,6 +28,8 @@
 /Makefile             @GuelPvH
 /make.ps1             @GuelPvH
 /captainhook.json     @GuelPvH
+/.gitleaks.toml       @GuelPvH
+/.gitleaksignore      @GuelPvH
 /phpstan.neon         @GuelPvH
 /pint.json            @GuelPvH
 /rector.php           @GuelPvH

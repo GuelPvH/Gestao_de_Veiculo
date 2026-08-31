@@ -14,6 +14,9 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 jobs:
   # ---------------------------------------------------------------------------
   # Qualidade: os MESMOS comandos do `make check` local, nos mesmos containers.
@@ -24,7 +27,9 @@ jobs:
     timeout-minutes: 25
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Prepara .env do CI
         run: |
@@ -115,7 +120,9 @@ jobs:
     timeout-minutes: 20
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Prepara .env do CI
         run: |
@@ -223,15 +230,17 @@ jobs:
     timeout-minutes: 20
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Constrói o stage prod
-        run: docker build -f docker/php/Dockerfile --target prod -t gestao-veiculo:prod-ci .
+        run: docker build -f docker/php/Dockerfile --target prod -t software-house:prod-ci .
 
       - name: A imagem de produção não pode conter ferramenta de dev
         run: |
           set -e
-          if docker run --rm gestao-veiculo:prod-ci sh -c 'test -d vendor/phpunit'; then
+          if docker run --rm software-house:prod-ci sh -c 'test -d vendor/phpunit'; then
             echo "FALHA: dependencia de desenvolvimento presente na imagem de producao."
             exit 1
           fi
@@ -241,7 +250,7 @@ jobs:
         run: |
           set -e
           for f in bootstrap/cache/config.php bootstrap/cache/routes-v7.php; do
-            if ! docker run --rm gestao-veiculo:prod-ci sh -c "test -f $f"; then
+            if ! docker run --rm software-house:prod-ci sh -c "test -f $f"; then
               echo "FALHA: $f nao foi gerado no build."
               echo "Sem isso cada container novo paga o custo de compilar no primeiro request."
               exit 1
@@ -256,7 +265,7 @@ jobs:
         # em TODA pagina — e o build da imagem passa normalmente.
         run: |
           set -e
-          if ! docker run --rm gestao-veiculo:prod-ci sh -c 'test -f public/build/manifest.json'; then
+          if ! docker run --rm software-house:prod-ci sh -c 'test -f public/build/manifest.json'; then
             echo "FALHA: public/build/manifest.json ausente na imagem de producao."
             echo "A aplicacao subiria sem CSS/JS e quebraria em toda pagina."
             exit 1
@@ -268,7 +277,7 @@ jobs:
         # ganhou centenas de MB e superfície de ataque desnecessária.
         run: |
           set -e
-          if docker run --rm gestao-veiculo:prod-ci sh -c 'command -v node >/dev/null 2>&1'; then
+          if docker run --rm software-house:prod-ci sh -c 'command -v node >/dev/null 2>&1'; then
             echo "FALHA: node presente na imagem de producao."
             exit 1
           fi
@@ -277,7 +286,7 @@ jobs:
       - name: O .env não vazou para a imagem
         run: |
           set -e
-          if docker run --rm gestao-veiculo:prod-ci sh -c 'test -f .env'; then
+          if docker run --rm software-house:prod-ci sh -c 'test -f .env'; then
             echo "FALHA: .env presente na imagem de producao — credenciais embutidas."
             exit 1
           fi

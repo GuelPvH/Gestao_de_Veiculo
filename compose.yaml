@@ -6,7 +6,7 @@
 # Nenhuma credencial literal neste arquivo.
 # =============================================================================
 
-name: gestao-veiculo-ppw
+name: software-house-ppw
 
 # -----------------------------------------------------------------------------
 # Blocos reutilizáveis: app, queue e scheduler compartilham imagem e montagens.
@@ -28,7 +28,7 @@ x-app-volumes: &app-volumes
 
 x-app-env: &app-env
   XDEBUG_MODE: ${XDEBUG_MODE:-off}
-  PHP_IDE_CONFIG: serverName=${COMPOSE_PROJECT_NAME:-gestao-veiculo-ppw}
+  PHP_IDE_CONFIG: serverName=${COMPOSE_PROJECT_NAME:-software-house-ppw}
 
 x-app-depends: &app-depends
   mysql:
@@ -43,7 +43,7 @@ services:
   app:
     container_name: ${CONTAINER_PREFIX:-${COMPOSE_PROJECT_NAME:-app}}_app
     build: *app-build
-    image: ${COMPOSE_PROJECT_NAME:-gestao-veiculo-ppw}-app:dev
+    image: ${COMPOSE_PROJECT_NAME:-software-house-ppw}-app:dev
     restart: unless-stopped
     environment: *app-env
     volumes: *app-volumes
@@ -68,7 +68,7 @@ services:
     build:
       context: .
       dockerfile: docker/nginx/Dockerfile
-    image: ${COMPOSE_PROJECT_NAME:-gestao-veiculo-ppw}-nginx:dev
+    image: ${COMPOSE_PROJECT_NAME:-software-house-ppw}-nginx:dev
     restart: unless-stopped
     ports:
       - "${APP_PORT:-8000}:80"
@@ -102,7 +102,7 @@ services:
         # entra em crash-loop com EACCES.
         UID: ${APP_UID:-82}
         GID: ${APP_GID:-82}
-    image: ${COMPOSE_PROJECT_NAME:-gestao-veiculo-ppw}-node:dev
+    image: ${COMPOSE_PROJECT_NAME:-software-house-ppw}-node:dev
     restart: unless-stopped
     environment:
       VITE_PORT: ${VITE_PORT:-5175}
@@ -122,7 +122,7 @@ services:
   queue:
     container_name: ${CONTAINER_PREFIX:-${COMPOSE_PROJECT_NAME:-app}}_queue
     build: *app-build
-    image: ${COMPOSE_PROJECT_NAME:-gestao-veiculo-ppw}-app:dev
+    image: ${COMPOSE_PROJECT_NAME:-software-house-ppw}-app:dev
     restart: unless-stopped
     environment: *app-env
     volumes: *app-volumes
@@ -153,7 +153,7 @@ services:
   scheduler:
     container_name: ${CONTAINER_PREFIX:-${COMPOSE_PROJECT_NAME:-app}}_scheduler
     build: *app-build
-    image: ${COMPOSE_PROJECT_NAME:-gestao-veiculo-ppw}-app:dev
+    image: ${COMPOSE_PROJECT_NAME:-software-house-ppw}-app:dev
     restart: unless-stopped
     environment: *app-env
     volumes: *app-volumes
@@ -186,12 +186,12 @@ services:
     build:
       context: .
       dockerfile: docker/mysql/Dockerfile
-    image: ${COMPOSE_PROJECT_NAME:-gestao-veiculo-ppw}-mysql:8.4
+    image: ${COMPOSE_PROJECT_NAME:-software-house-ppw}-mysql:8.4
     restart: unless-stopped
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?defina MYSQL_ROOT_PASSWORD no .env}
-      MYSQL_DATABASE: ${DB_DATABASE:-gestao_veiculo}
-      MYSQL_USER: ${DB_USERNAME:-gestao}
+      MYSQL_DATABASE: ${DB_DATABASE:-software_house}
+      MYSQL_USER: ${DB_USERNAME:-software_house}
       MYSQL_PASSWORD: ${DB_PASSWORD:?defina DB_PASSWORD no .env}
     volumes:
       - mysql_data:/var/lib/mysql
@@ -235,8 +235,8 @@ services:
     restart: unless-stopped
     profiles: [tools]
     environment:
-      PMA_HOST: mysql
-      PMA_PORT: 3306
+      PMA_HOST: ${DB_HOST:-mysql}
+      PMA_PORT: ${DB_PORT:-3306}
       UPLOAD_LIMIT: 64M
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?defina MYSQL_ROOT_PASSWORD no .env}
     ports:

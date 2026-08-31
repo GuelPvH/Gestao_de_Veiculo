@@ -86,6 +86,7 @@ cat <<JSON > /tmp/branch-protection.json
       "Qualidade (lint, análise, testes)",
       "Smoke test (stack completa)",
       "Build da imagem de produção",
+      "Gitleaks e política de arquivos",
       "Conventional Commits"
     ]
   },

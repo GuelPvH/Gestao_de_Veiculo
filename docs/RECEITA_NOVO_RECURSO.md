@@ -3,7 +3,12 @@
 Este é o caminho completo, na ordem, para criar uma entidade nova com tela e API
 — seguindo os padrões que os testes de arquitetura cobram.
 
-**Não invente estrutura.** O recurso `Vehicle` já existe e é o modelo a copiar:
+> **Contexto:** `Vehicle` pertence ao scaffold técnico anterior ao escopo da
+> Deploy. As referências abaixo continuam válidas apenas como exemplo da
+> estrutura existente; não significam que frota faça parte do produto-alvo.
+
+**Não invente estrutura.** Enquanto os primeiros módulos da Deploy ainda não
+existirem, o recurso `Vehicle` é o exemplo técnico disponível para copiar:
 cada passo abaixo aponta o arquivo real que serve de referência.
 
 O exemplo usado aqui é **motorista** (`Driver`), que o projeto ainda não tem.

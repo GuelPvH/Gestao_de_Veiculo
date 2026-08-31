@@ -1,0 +1,11 @@
+# Falsos positivos históricos confirmados. Cada entrada aponta para um único
+# achado imutável; não use regex ou caminho amplo como exceção.
+
+# Placeholder de oito caracteres no antigo .env.example, nunca usado fora do
+# ambiente de desenvolvimento.
+959419b556497b214aa4b9f3e0415e50fecc7e6e:.env.example:project-sensitive-env-value:28
+
+# Valores estáticos exclusivos do runner efêmero em uma versão antiga do CI.
+ca89acf423b13e80b3e7081f40d8940e0d9f9cea:.github/workflows/ci.yml:project-sensitive-env-value:21
+ca89acf423b13e80b3e7081f40d8940e0d9f9cea:.github/workflows/ci.yml:project-sensitive-env-value:22
+
