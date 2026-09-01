@@ -191,6 +191,7 @@ final class AuthController extends Controller
             function (User $user, string $password) use ($request): void {
                 $user->setAttribute('password', $password);
                 $user->setAttribute('password_changed_at', now());
+                $user->setAttribute('email_verified_at', $user->email_verified_at ?? now());
                 $user->setAttribute('remember_token', Str::random(60));
                 $user->setAttribute('failed_login_attempts', 0);
                 $user->setAttribute('locked_until', null);

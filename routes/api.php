@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\Api\AuditLogController;
+use App\Http\Controllers\Api\AccessControlController;
+use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ClientController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\FinancialTransactionController;
@@ -12,9 +14,12 @@ use App\Http\Controllers\Api\ProjectMemberController;
 use App\Http\Controllers\Api\ProposalController;
 use App\Http\Controllers\Api\PublicLeadController;
 use App\Http\Controllers\Api\PublicServiceController;
+use App\Http\Controllers\Api\RoleController;
+use App\Http\Controllers\Api\SecurityLogController;
 use App\Http\Controllers\Api\ServiceController;
 use App\Http\Controllers\Api\TaskCommentController;
 use App\Http\Controllers\Api\TaskController;
+use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\VehicleApiController;
 use App\Http\Resources\UserResource;
 use Illuminate\Http\Request;
@@ -46,11 +51,38 @@ Route::post('public/leads', [PublicLeadController::class, 'store'])
     ->middleware('throttle:public-leads')
     ->name('api.public.leads.store');
 
+Route::prefix('auth')->name('api.auth.')->group(function (): void {
+    Route::post('login', [AuthController::class, 'login'])
+        ->middleware('throttle:login')
+        ->name('login');
+    Route::post('two-factor/challenge', [AuthController::class, 'twoFactorChallenge'])
+        ->middleware('throttle:two-factor')
+        ->name('two-factor.challenge');
+    Route::post('forgot-password', [AuthController::class, 'forgotPassword'])
+        ->middleware('throttle:password-reset')
+        ->name('password.forgot');
+    Route::post('reset-password', [AuthController::class, 'resetPassword'])
+        ->middleware('throttle:password-reset')
+        ->name('password.reset');
+});
+
 // Rotas que exigem autenticação (Sanctum)
-Route::middleware('auth:sanctum')->group(function (): void {
+Route::middleware(['auth:sanctum', 'active.account', 'security.audit'])->group(function (): void {
     Route::get('/user', fn (Request $request): UserResource => new UserResource($request->user()))
         ->name('api.user');
     Route::get('/dashboard', DashboardController::class)->name('api.dashboard');
+
+    Route::prefix('auth')->name('api.auth.')->controller(AuthController::class)->group(function (): void {
+        Route::get('me', 'me')->name('me');
+        Route::post('logout', 'logout')->name('logout');
+        Route::post('logout-all', 'logoutAll')->name('logout-all');
+        Route::get('sessions', 'sessions')->name('sessions');
+        Route::delete('tokens/{token}', 'revokeToken')->whereNumber('token')->name('tokens.destroy');
+        Route::put('password', 'changePassword')->name('password.change');
+        Route::post('two-factor/setup', 'startTwoFactor')->name('two-factor.setup');
+        Route::post('two-factor/confirm', 'confirmTwoFactor')->name('two-factor.confirm');
+        Route::delete('two-factor', 'disableTwoFactor')->name('two-factor.disable');
+    });
 
     Route::post('leads/{lead}/convert', [LeadController::class, 'convert'])->name('api.leads.convert');
     Route::post('proposals/{proposal}/approve', [ProposalController::class, 'approve'])->name('api.proposals.approve');
@@ -59,6 +91,12 @@ Route::middleware('auth:sanctum')->group(function (): void {
     Route::post('tasks/{task}/comments', [TaskCommentController::class, 'store'])->name('api.tasks.comments.store');
     Route::post('financial-transactions/{transaction}/approve', [FinancialTransactionController::class, 'approve'])
         ->name('api.financial-transactions.approve');
+    Route::post('users/{user}/deactivate', [UserController::class, 'deactivate'])->name('api.users.deactivate');
+    Route::put('users/{user}/access', [AccessControlController::class, 'syncUser'])->name('api.users.access.update');
+    Route::get('access/roles', [AccessControlController::class, 'roles'])->name('api.access.roles');
+    Route::get('access/permissions', [AccessControlController::class, 'permissions'])->name('api.access.permissions');
+    Route::get('authentication-logs', [SecurityLogController::class, 'authentication'])->name('api.authentication-logs.index');
+    Route::get('security-events', [SecurityLogController::class, 'security'])->name('api.security-events.index');
 
     Route::apiResources([
         'clients' => ClientController::class,
@@ -67,7 +105,9 @@ Route::middleware('auth:sanctum')->group(function (): void {
         'projects' => ProjectController::class,
         'tasks' => TaskController::class,
         'services' => ServiceController::class,
+        'users' => UserController::class,
     ]);
+    Route::apiResource('roles', RoleController::class)->except('index');
     Route::apiResource('financial-transactions', FinancialTransactionController::class)
         ->parameters(['financial-transactions' => 'transaction']);
     Route::apiResource('audit-logs', AuditLogController::class)

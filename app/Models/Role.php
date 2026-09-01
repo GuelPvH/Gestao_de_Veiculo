@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
+/** @property bool $is_system */
 #[Fillable(['name', 'display_name', 'description'])]
 class Role extends Model
 {

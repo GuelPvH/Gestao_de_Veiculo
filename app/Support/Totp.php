@@ -32,6 +32,11 @@ final class Totp
         return false;
     }
 
+    public function codeAt(string $secret, ?int $timestamp = null): string
+    {
+        return $this->code($secret, intdiv($timestamp ?? time(), 30));
+    }
+
     public function uri(string $secret, string $email, string $issuer = 'Deploy'): string
     {
         $label = rawurlencode("{$issuer}:{$email}");

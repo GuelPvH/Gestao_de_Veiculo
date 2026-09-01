@@ -5,13 +5,17 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\SecuritySeverity;
+use App\Models\Concerns\ImmutableLog;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/** @property SecuritySeverity $severity */
 #[Fillable(['user_id', 'event_type', 'severity', 'ip_address', 'user_agent', 'metadata'])]
 class SecurityEvent extends Model
 {
+    use ImmutableLog;
+
     public const UPDATED_AT = null;
 
     /** @return BelongsTo<User, $this> */

@@ -8,6 +8,12 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property User $user
+ * @property int $attempts
+ * @property \Illuminate\Support\Carbon $expires_at
+ * @property \Illuminate\Support\Carbon|null $consumed_at
+ */
 #[Fillable(['user_id', 'token_hash', 'expires_at', 'ip_address', 'user_agent'])]
 class TwoFactorChallenge extends Model
 {

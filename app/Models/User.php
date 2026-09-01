@@ -17,7 +17,13 @@ use Laravel\Sanctum\HasApiTokens;
 
 /**
  * @property UserStatus $status
+ * @property \Illuminate\Support\Carbon|null $email_verified_at
  * @property \Illuminate\Support\Carbon|null $locked_until
+ * @property \Illuminate\Support\Carbon|null $last_login_at
+ * @property \Illuminate\Support\Carbon|null $two_factor_confirmed_at
+ * @property string|null $two_factor_secret
+ * @property list<string>|null $two_factor_recovery_codes
+ * @property int $failed_login_attempts
  */
 #[Fillable(['name', 'email', 'password', 'avatar_path'])]
 #[Hidden([
