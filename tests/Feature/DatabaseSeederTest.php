@@ -24,7 +24,7 @@ it('semeia o usuario administrador com credenciais utilizaveis', function (): vo
 
     $user = User::query()->where('email', 'teste@software-house.test')->sole();
 
-    expect($user->is_admin)->toBeTrue()
+    expect($user->isSuperAdmin())->toBeTrue()
         ->and(Hash::check('password', $user->password))->toBeTrue();
 });
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
+use App\Models\Role;
 use App\Models\User;
 use App\Models\Vehicle;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -21,6 +22,11 @@ final class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        $this->call([
+            AccessControlSeeder::class,
+            FinancialCategorySeeder::class,
+        ]);
+
         $user = User::firstOrCreate(
             ['email' => 'teste@software-house.test'],
             [
@@ -34,13 +40,8 @@ final class DatabaseSeeder extends Seeder
             ],
         );
 
-        // `is_admin` fica FORA do $fillable de propósito: mass assignment nessa
-        // coluna seria escalada de privilégio se algum controller chamasse
-        // `User::create($request->all())`. Aqui a atribuição é explícita, que é
-        // o único lugar onde ela deve acontecer. Sem isto o usuário semeado não
-        // abriria /pulse nem /horizon, que exigem o gate de admin.
-        $user->is_admin = true;
-        $user->save();
+        $superAdmin = Role::query()->where('name', 'super_admin')->sole();
+        $user->roles()->syncWithoutDetaching([$superAdmin->id]);
 
         // Só popula a frota se ela estiver vazia — reexecutar não duplica.
         if (Vehicle::query()->exists()) {

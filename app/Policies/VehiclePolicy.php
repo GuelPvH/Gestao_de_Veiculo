@@ -25,11 +25,9 @@ use App\Models\Vehicle;
  * no controller. Sem a Policy, a regra ficaria espalhada por cinco arquivos, e
  * é assim que se produz um endpoint que esqueceram de proteger.
  *
- * O gancho já existe: a coluna `users.is_admin` (usada nos gates do Pulse e do
- * Horizon, em AppServiceProvider e HorizonServiceProvider). Restringir remoção a
- * administrador, por exemplo, é trocar o `return true` do `delete()` por
- * `return $user->is_admin;` — e o teste que hoje remove veículo com um usuário
- * comum falha, mostrando exatamente quem depende da regra.
+ * O gancho de autorização agora é o RBAC usado pela Deploy. Quando esta fatia
+ * demonstrativa for removida, sua Policy também sai sem contaminar as regras do
+ * domínio novo.
  *
  * Não existem `viewAny` nem `view`: leitura de frota é pública neste projeto
  * (ver routes/api.php). Se um dia deixar de ser, adicione os métodos aqui e o

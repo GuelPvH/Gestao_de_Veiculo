@@ -26,7 +26,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        Gate::define('viewPulse', fn (User $user): bool => $user->is_admin);
+        Gate::before(fn (User $user): ?bool => $user->isSuperAdmin() ? true : null);
+        Gate::define('viewPulse', fn (User $user): bool => $user->hasPermission('security.view'));
 
         RateLimiter::for('api', fn (Request $request) => $request->user()
             ? Limit::perMinute(120)->by($request->user()->id)
