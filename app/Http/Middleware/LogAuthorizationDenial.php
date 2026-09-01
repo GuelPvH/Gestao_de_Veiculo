@@ -18,23 +18,34 @@ final readonly class LogAuthorizationDenial
     public function handle(Request $request, Closure $next): Response
     {
         try {
-            return $next($request);
-        } catch (AuthorizationException $exception) {
-            $user = $request->user();
+            $response = $next($request);
 
-            SecurityEvent::query()->create([
-                'user_id' => $user instanceof User ? $user->id : null,
-                'event_type' => 'permission_denied',
-                'severity' => SecuritySeverity::Warning,
-                'ip_address' => $request->ip(),
-                'user_agent' => $request->userAgent(),
-                'metadata' => [
-                    'method' => $request->method(),
-                    'route' => $request->route()?->uri(),
-                ],
-            ]);
+            if ($response->getStatusCode() === Response::HTTP_FORBIDDEN) {
+                $this->logDenial($request);
+            }
+
+            return $response;
+        } catch (AuthorizationException $exception) {
+            $this->logDenial($request);
 
             throw $exception;
         }
+    }
+
+    private function logDenial(Request $request): void
+    {
+        $user = $request->user();
+
+        SecurityEvent::query()->create([
+            'user_id' => $user instanceof User ? $user->id : null,
+            'event_type' => 'permission_denied',
+            'severity' => SecuritySeverity::Warning,
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+            'metadata' => [
+                'method' => $request->method(),
+                'route' => $request->route()?->uri(),
+            ],
+        ]);
     }
 }
