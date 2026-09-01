@@ -10,10 +10,18 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+/**
+ * @property ProposalStatus $status
+ * @property \Illuminate\Support\Carbon|null $valid_until
+ * @property \Illuminate\Support\Carbon|null $accepted_at
+ */
 #[Fillable(['lead_id', 'client_id', 'title', 'description', 'value', 'status', 'valid_until'])]
 class Proposal extends Model
 {
     use SoftDeletes;
+
+    /** @var array<string, mixed> */
+    protected $attributes = ['status' => 'draft'];
 
     /** @return BelongsTo<Lead, $this> */
     public function lead(): BelongsTo

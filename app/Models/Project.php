@@ -14,6 +14,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+/**
+ * @property ProjectStatus $status
+ * @property Priority $priority
+ * @property \Illuminate\Support\Carbon|null $start_date
+ * @property \Illuminate\Support\Carbon|null $deadline
+ */
 #[Fillable([
     'client_id', 'lead_id', 'name', 'description', 'project_type', 'status',
     'priority', 'responsible_id', 'start_date', 'deadline', 'budget', 'progress',
@@ -22,6 +28,13 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Project extends Model
 {
     use SoftDeletes;
+
+    /** @var array<string, mixed> */
+    protected $attributes = [
+        'status' => 'planning',
+        'priority' => 'medium',
+        'progress' => 0,
+    ];
 
     /** @return BelongsTo<Client, $this> */
     public function client(): BelongsTo

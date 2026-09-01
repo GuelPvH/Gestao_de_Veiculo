@@ -10,6 +10,10 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+/**
+ * @property ServiceStatus $status
+ * @property \Illuminate\Support\Carbon|null $published_at
+ */
 #[Fillable([
     'name', 'slug', 'short_description', 'description', 'features', 'tags',
     'base_price', 'status', 'sort_order', 'published_at',
@@ -17,6 +21,12 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Service extends Model
 {
     use SoftDeletes;
+
+    /** @var array<string, mixed> */
+    protected $attributes = [
+        'status' => 'draft',
+        'sort_order' => 0,
+    ];
 
     /** @return BelongsTo<User, $this> */
     public function creator(): BelongsTo

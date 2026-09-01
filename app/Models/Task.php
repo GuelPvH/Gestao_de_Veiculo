@@ -13,6 +13,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+/**
+ * @property TaskStatus $status
+ * @property Priority $priority
+ * @property \Illuminate\Support\Carbon|null $due_date
+ * @property \Illuminate\Support\Carbon|null $started_at
+ * @property \Illuminate\Support\Carbon|null $completed_at
+ * @property Project $project
+ */
 #[Fillable([
     'project_id', 'title', 'description', 'status', 'priority', 'assigned_to',
     'estimated_minutes', 'due_date', 'started_at', 'completed_at',
@@ -20,6 +28,12 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Task extends Model
 {
     use SoftDeletes;
+
+    /** @var array<string, mixed> */
+    protected $attributes = [
+        'status' => 'backlog',
+        'priority' => 'medium',
+    ];
 
     /** @return BelongsTo<Project, $this> */
     public function project(): BelongsTo

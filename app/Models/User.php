@@ -31,6 +31,12 @@ class User extends Authenticatable
     /** @use HasFactory<UserFactory> */
     use HasApiTokens, HasFactory, Notifiable;
 
+    /** @var array<string, mixed> */
+    protected $attributes = [
+        'status' => 'active',
+        'failed_login_attempts' => 0,
+    ];
+
     /** @return BelongsToMany<Role, $this> */
     public function roles(): BelongsToMany
     {

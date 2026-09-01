@@ -11,6 +11,12 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+/**
+ * @property FinancialTransactionType $type
+ * @property FinancialTransactionStatus $status
+ * @property \Illuminate\Support\Carbon $due_date
+ * @property \Illuminate\Support\Carbon|null $paid_at
+ */
 #[Fillable([
     'project_id', 'client_id', 'category_id', 'type', 'description', 'counterparty',
     'amount', 'due_date', 'paid_at', 'status', 'notes',
@@ -18,6 +24,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class FinancialTransaction extends Model
 {
     use SoftDeletes;
+
+    /** @var array<string, mixed> */
+    protected $attributes = ['status' => 'pending'];
 
     /** @return BelongsTo<Project, $this> */
     public function project(): BelongsTo

@@ -11,6 +11,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+/**
+ * @property LeadStatus $status
+ * @property \Illuminate\Support\Carbon|null $desired_deadline
+ * @property \Illuminate\Support\Carbon|null $converted_at
+ */
 #[Fillable([
     'name', 'company', 'email', 'phone', 'source', 'project_type', 'status',
     'estimated_value', 'desired_deadline', 'objective', 'notes', 'lost_reason',
@@ -18,6 +23,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Lead extends Model
 {
     use SoftDeletes;
+
+    /** @var array<string, mixed> */
+    protected $attributes = ['status' => 'new'];
 
     /** @return BelongsTo<User, $this> */
     public function assignee(): BelongsTo

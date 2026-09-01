@@ -12,10 +12,20 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+/**
+ * @property ClientType $type
+ * @property ClientStatus $status
+ */
 #[Fillable(['type', 'name', 'company_name', 'document', 'email', 'phone', 'address', 'status'])]
 class Client extends Model
 {
     use SoftDeletes;
+
+    /** @var array<string, mixed> */
+    protected $attributes = [
+        'type' => 'company',
+        'status' => 'active',
+    ];
 
     /** @return BelongsTo<User, $this> */
     public function creator(): BelongsTo

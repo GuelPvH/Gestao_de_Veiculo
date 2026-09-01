@@ -12,6 +12,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 #[Fillable(['project_id', 'user_id', 'project_role', 'joined_at', 'left_at'])]
 class ProjectMember extends Model
 {
+    /** @var array<string, mixed> */
+    protected $attributes = ['project_role' => 'developer'];
+
     /** @return BelongsTo<Project, $this> */
     public function project(): BelongsTo
     {
