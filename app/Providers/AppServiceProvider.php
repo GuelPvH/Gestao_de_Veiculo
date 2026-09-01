@@ -16,6 +16,7 @@ use App\Models\Service;
 use App\Models\Task;
 use App\Models\TaskComment;
 use App\Models\User;
+use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -37,6 +38,13 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        ResetPassword::createUrlUsing(function (User $user, string $token): string {
+            $frontendUrl = rtrim((string) config('app.frontend_url'), '/');
+
+            return $frontendUrl.'/reset-password?token='.rawurlencode($token)
+                .'&email='.rawurlencode($user->email);
+        });
+
         Gate::before(fn (User $user): ?bool => $user->isSuperAdmin() ? true : null);
         Gate::define('viewPulse', fn (User $user): bool => $user->hasPermission('security.view'));
 

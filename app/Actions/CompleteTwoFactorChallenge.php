@@ -49,8 +49,9 @@ final readonly class CompleteTwoFactorChallenge
 
         if (! $valid) {
             $challenge->increment('attempts');
+            $currentChallenge = $challenge->fresh();
 
-            if ($challenge->fresh()->attempts >= 5) {
+            if ($currentChallenge instanceof TwoFactorChallenge && $currentChallenge->attempts >= 5) {
                 SecurityEvent::query()->create([
                     'user_id' => $user->id,
                     'event_type' => 'two_factor_challenge_blocked',

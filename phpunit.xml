@@ -22,6 +22,8 @@
     </source>
     <php>
         <env name="APP_ENV" value="testing"/>
+        <!-- Chave deterministica e exclusiva da suite; nunca usada fora de testes. -->
+        <env name="APP_KEY" value="base64:MDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDA="/>
         <env name="APP_MAINTENANCE_DRIVER" value="file"/>
 
         <!-- 4 rounds em vez de 12: corta segundos de cada teste que cria

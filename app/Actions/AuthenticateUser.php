@@ -34,7 +34,8 @@ final readonly class AuthenticateUser
     ): array {
         $normalizedEmail = Str::lower(trim($email));
         $user = User::query()->whereRaw('LOWER(email) = ?', [$normalizedEmail])->first();
-        $passwordMatches = $this->hasher->check($password, $user?->password ?? self::DUMMY_HASH);
+        $passwordHash = $user instanceof User ? $user->password : self::DUMMY_HASH;
+        $passwordMatches = $this->hasher->check($password, $passwordHash);
 
         if (! $user instanceof User || ! $passwordMatches) {
             $this->failedAttempt($user, $normalizedEmail, $ipAddress, $userAgent);

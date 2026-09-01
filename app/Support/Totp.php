@@ -12,6 +12,10 @@ final class Totp
 
     public function generateSecret(int $bytes = 20): string
     {
+        if ($bytes < 1) {
+            throw new InvalidArgumentException('O segredo TOTP deve ter ao menos um byte.');
+        }
+
         return $this->base32Encode(random_bytes($bytes));
     }
 
@@ -62,14 +66,14 @@ final class Totp
         $key = $this->base32Decode($secret);
         $binaryCounter = pack('N2', intdiv($counter, 4294967296), $counter % 4294967296);
         $hash = hash_hmac('sha1', $binaryCounter, $key, true);
-        $offset = ord($hash[19]) & 0x0f;
+        $offset = ord($hash[19]) & 0x0F;
         $value = unpack('N', substr($hash, $offset, 4));
 
         if ($value === false) {
             throw new InvalidArgumentException('Não foi possível calcular o código TOTP.');
         }
 
-        return str_pad((string) (($value[1] & 0x7fffffff) % 1000000), 6, '0', STR_PAD_LEFT);
+        return str_pad((string) (($value[1] & 0x7FFFFFFF) % 1000000), 6, '0', STR_PAD_LEFT);
     }
 
     private function base32Encode(string $value): string
@@ -84,7 +88,7 @@ final class Totp
 
         foreach (str_split($bits, 5) as $chunk) {
             $chunk = str_pad($chunk, 5, '0', STR_PAD_RIGHT);
-            $encoded .= self::ALPHABET[bindec($chunk)];
+            $encoded .= self::ALPHABET[(int) bindec($chunk)];
         }
 
         return $encoded;
@@ -109,7 +113,7 @@ final class Totp
 
         foreach (str_split($bits, 8) as $byte) {
             if (strlen($byte) === 8) {
-                $decoded .= chr(bindec($byte));
+                $decoded .= chr((int) bindec($byte));
             }
         }
 

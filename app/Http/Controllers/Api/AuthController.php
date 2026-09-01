@@ -29,10 +29,8 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
-use Laravel\Sanctum\PersonalAccessToken;
 
 final class AuthController extends Controller
 {
@@ -109,10 +107,10 @@ final class AuthController extends Controller
 
     public function logout(Request $request): JsonResponse
     {
-        $token = $this->user($request)->currentAccessToken();
+        $user = $this->user($request);
 
-        if ($token instanceof PersonalAccessToken) {
-            $token->delete();
+        if ($request->bearerToken() !== null) {
+            $user->currentAccessToken()->delete();
         } else {
             Auth::guard('web')->logout();
             $request->session()->invalidate();
@@ -120,8 +118,8 @@ final class AuthController extends Controller
         }
 
         AuthenticationLog::query()->create([
-            'user_id' => $this->user($request)->id,
-            'email_hash' => hash('sha256', strtolower($this->user($request)->email)),
+            'user_id' => $user->id,
+            'email_hash' => hash('sha256', strtolower($user->email)),
             'event' => 'logout',
             'success' => true,
             'ip_address' => $request->ip(),
