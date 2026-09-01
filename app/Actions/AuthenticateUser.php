@@ -14,11 +14,11 @@ use Illuminate\Support\Str;
 
 final readonly class AuthenticateUser
 {
-    private const DUMMY_HASH = '$2y$12$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2uheWG/igi.';
+    private const string DUMMY_HASH = '$2y$12$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2uheWG/igi.';
 
-    private const MAX_ATTEMPTS = 5;
+    private const int MAX_ATTEMPTS = 5;
 
-    private const LOCK_MINUTES = 15;
+    private const int LOCK_MINUTES = 15;
 
     public function __construct(private Hasher $hasher) {}
 

@@ -13,12 +13,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Carbon;
 
 /**
  * @property ProjectStatus $status
  * @property Priority $priority
- * @property \Illuminate\Support\Carbon|null $start_date
- * @property \Illuminate\Support\Carbon|null $deadline
+ * @property Carbon|null $start_date
+ * @property Carbon|null $deadline
  */
 #[Fillable([
     'client_id', 'lead_id', 'name', 'description', 'project_type', 'status',
@@ -87,7 +88,7 @@ class Project extends Model
     }
 
     /** @param Builder<Project> $query */
-    public function scopeVisibleTo(Builder $query, User $user): void
+    protected function scopeVisibleTo(Builder $query, User $user): void
     {
         if ($user->hasPermission('project.view_all')) {
             return;

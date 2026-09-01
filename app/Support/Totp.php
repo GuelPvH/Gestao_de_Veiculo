@@ -8,13 +8,11 @@ use InvalidArgumentException;
 
 final class Totp
 {
-    private const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+    private const string ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
 
     public function generateSecret(int $bytes = 20): string
     {
-        if ($bytes < 1) {
-            throw new InvalidArgumentException('O segredo TOTP deve ter ao menos um byte.');
-        }
+        throw_if($bytes < 1, InvalidArgumentException::class, 'O segredo TOTP deve ter ao menos um byte.');
 
         return $this->base32Encode(random_bytes($bytes));
     }
@@ -69,9 +67,7 @@ final class Totp
         $offset = ord($hash[19]) & 0x0F;
         $value = unpack('N', substr($hash, $offset, 4));
 
-        if ($value === false) {
-            throw new InvalidArgumentException('Não foi possível calcular o código TOTP.');
-        }
+        throw_if($value === false, InvalidArgumentException::class, 'Não foi possível calcular o código TOTP.');
 
         return str_pad((string) (($value[1] & 0x7FFFFFFF) % 1000000), 6, '0', STR_PAD_LEFT);
     }
@@ -102,9 +98,7 @@ final class Totp
         foreach (str_split($value) as $character) {
             $position = strpos(self::ALPHABET, $character);
 
-            if ($position === false) {
-                throw new InvalidArgumentException('Segredo TOTP inválido.');
-            }
+            throw_if($position === false, InvalidArgumentException::class, 'Segredo TOTP inválido.');
 
             $bits .= str_pad(decbin($position), 5, '0', STR_PAD_LEFT);
         }

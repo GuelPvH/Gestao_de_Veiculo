@@ -35,7 +35,7 @@ final class TaskController extends Controller
         $task->setAttribute('created_by', $request->user()?->getAuthIdentifier());
         $task->save();
 
-        return (new TaskResource($task->load('assignee')))->response()->setStatusCode(201);
+        return new TaskResource($task->load('assignee'))->response()->setStatusCode(201);
     }
 
     public function show(Task $task): TaskResource

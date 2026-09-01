@@ -13,6 +13,7 @@ use App\Http\Resources\FinancialTransactionResource;
 use App\Models\FinancialTransaction;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Gate;
@@ -42,7 +43,7 @@ final class FinancialTransactionController extends Controller
         $transaction->setAttribute('created_by', $request->user()?->getAuthIdentifier());
         $transaction->save();
 
-        return (new FinancialTransactionResource($transaction))->response()->setStatusCode(201);
+        return new FinancialTransactionResource($transaction)->response()->setStatusCode(201);
     }
 
     public function show(FinancialTransaction $transaction): FinancialTransactionResource
@@ -70,7 +71,7 @@ final class FinancialTransactionController extends Controller
     }
 
     public function approve(
-        \Illuminate\Http\Request $request,
+        Request $request,
         FinancialTransaction $transaction,
         ApproveFinancialTransaction $approveTransaction,
     ): FinancialTransactionResource {

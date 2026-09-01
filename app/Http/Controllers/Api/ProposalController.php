@@ -37,7 +37,7 @@ final class ProposalController extends Controller
         $proposal->setAttribute('created_by', $request->user()?->getAuthIdentifier());
         $proposal->save();
 
-        return (new ProposalResource($proposal))->response()->setStatusCode(201);
+        return new ProposalResource($proposal)->response()->setStatusCode(201);
     }
 
     public function show(Proposal $proposal): ProposalResource

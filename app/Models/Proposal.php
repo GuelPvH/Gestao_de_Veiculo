@@ -9,11 +9,12 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Carbon;
 
 /**
  * @property ProposalStatus $status
- * @property \Illuminate\Support\Carbon|null $valid_until
- * @property \Illuminate\Support\Carbon|null $accepted_at
+ * @property Carbon|null $valid_until
+ * @property Carbon|null $accepted_at
  */
 #[Fillable(['lead_id', 'client_id', 'title', 'description', 'value', 'status', 'valid_until'])]
 class Proposal extends Model

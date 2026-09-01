@@ -27,11 +27,7 @@ final readonly class BootstrapSuperAdmin
                 ->lockForUpdate()
                 ->sole();
 
-            if ($role->users()->exists()) {
-                throw new RuntimeException(
-                    'O bootstrap foi recusado porque o sistema já possui um Super Admin.',
-                );
-            }
+            throw_if($role->users()->exists(), RuntimeException::class, 'O bootstrap foi recusado porque o sistema já possui um Super Admin.');
 
             $user = User::query()->firstOrCreate(
                 ['email' => Str::lower(trim($email))],
@@ -43,11 +39,7 @@ final readonly class BootstrapSuperAdmin
 
             $status = $this->passwordBroker->sendResetLink(['email' => $user->email]);
 
-            if ($status !== PasswordBroker::RESET_LINK_SENT) {
-                throw new RuntimeException(
-                    'Não foi possível enviar o convite seguro. Nenhum Super Admin foi atribuído.',
-                );
-            }
+            throw_if($status !== PasswordBroker::RESET_LINK_SENT, RuntimeException::class, 'Não foi possível enviar o convite seguro. Nenhum Super Admin foi atribuído.');
 
             $user->roles()->syncWithoutDetaching([$role->id]);
 

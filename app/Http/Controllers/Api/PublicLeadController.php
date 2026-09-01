@@ -16,6 +16,6 @@ final class PublicLeadController extends Controller
     {
         $lead = Lead::query()->create($request->validated());
 
-        return (new LeadResource($lead))->response()->setStatusCode(201);
+        return new LeadResource($lead)->response()->setStatusCode(201);
     }
 }

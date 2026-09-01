@@ -79,7 +79,7 @@ it('habilita TOTP e exige o segundo fator antes de emitir o token', function ():
     $user = User::factory()->create(['password' => 'Senha#Segura123']);
     Sanctum::actingAs($user);
     /** @var Totp $totp */
-    $totp = app(Totp::class);
+    $totp = resolve(Totp::class);
 
     $setup = postJson('/api/auth/two-factor/setup', [
         'current_password' => 'Senha#Segura123',

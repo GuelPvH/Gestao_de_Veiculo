@@ -13,14 +13,15 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Carbon;
 use Laravel\Sanctum\HasApiTokens;
 
 /**
  * @property UserStatus $status
- * @property \Illuminate\Support\Carbon|null $email_verified_at
- * @property \Illuminate\Support\Carbon|null $locked_until
- * @property \Illuminate\Support\Carbon|null $last_login_at
- * @property \Illuminate\Support\Carbon|null $two_factor_confirmed_at
+ * @property Carbon|null $email_verified_at
+ * @property Carbon|null $locked_until
+ * @property Carbon|null $last_login_at
+ * @property Carbon|null $two_factor_confirmed_at
  * @property string|null $two_factor_secret
  * @property list<string>|null $two_factor_recovery_codes
  * @property int $failed_login_attempts

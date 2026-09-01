@@ -35,7 +35,7 @@ final class ProjectController extends Controller
         $project->setAttribute('created_by', $request->user()?->getAuthIdentifier());
         $project->save();
 
-        return (new ProjectResource($project->load(['client', 'members'])))
+        return new ProjectResource($project->load(['client', 'members']))
             ->response()
             ->setStatusCode(201);
     }

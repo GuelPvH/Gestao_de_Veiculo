@@ -50,7 +50,7 @@ final class LeadController extends Controller
         $lead->setAttribute('created_by', $request->user()?->getAuthIdentifier());
         $lead->save();
 
-        return (new LeadResource($lead))->response()->setStatusCode(201);
+        return new LeadResource($lead)->response()->setStatusCode(201);
     }
 
     public function show(Lead $lead): LeadResource
@@ -92,6 +92,6 @@ final class LeadController extends Controller
 
         $project = $convertLead->handle($lead, $user, $request->validated());
 
-        return (new ProjectResource($project))->response()->setStatusCode(201);
+        return new ProjectResource($project)->response()->setStatusCode(201);
     }
 }

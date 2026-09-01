@@ -11,7 +11,7 @@ use Illuminate\Database\Seeder;
 final class AccessControlSeeder extends Seeder
 {
     /** @var array<string, list<string>> */
-    private const ROLE_PERMISSIONS = [
+    private const array ROLE_PERMISSIONS = [
         'manager' => [
             'dashboard.view_general', 'lead.view_any', 'lead.view', 'lead.create',
             'lead.update', 'lead.convert', 'client.view_any', 'client.view',

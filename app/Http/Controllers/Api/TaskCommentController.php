@@ -20,7 +20,7 @@ final class TaskCommentController extends Controller
         $comment->setAttribute('user_id', $request->user()?->getAuthIdentifier());
         $comment->save();
 
-        return (new TaskCommentResource($comment->load('user')))
+        return new TaskCommentResource($comment->load('user'))
             ->response()
             ->setStatusCode(201);
     }

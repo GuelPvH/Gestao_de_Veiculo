@@ -36,7 +36,7 @@ final class ServiceController extends Controller
         $service->setAttribute('updated_by', $request->user()?->getAuthIdentifier());
         $service->save();
 
-        return (new ServiceResource($service))->response()->setStatusCode(201);
+        return new ServiceResource($service)->response()->setStatusCode(201);
     }
 
     public function show(Service $service): ServiceResource

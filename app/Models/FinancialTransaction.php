@@ -10,12 +10,13 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Carbon;
 
 /**
  * @property FinancialTransactionType $type
  * @property FinancialTransactionStatus $status
- * @property \Illuminate\Support\Carbon $due_date
- * @property \Illuminate\Support\Carbon|null $paid_at
+ * @property Carbon $due_date
+ * @property Carbon|null $paid_at
  */
 #[Fillable([
     'project_id', 'client_id', 'category_id', 'type', 'description', 'counterparty',

@@ -12,7 +12,7 @@ use Illuminate\Support\Str;
 final readonly class AuditObserver
 {
     /** @var list<string> */
-    private const REDACTED_FIELDS = [
+    private const array REDACTED_FIELDS = [
         'password', 'remember_token', 'two_factor_secret',
         'two_factor_recovery_codes', 'token', 'token_hash',
     ];

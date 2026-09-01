@@ -22,7 +22,7 @@ final class RoleController extends Controller
         $role->save();
         $role->permissions()->sync($request->validated('permission_ids'));
 
-        return (new RoleResource($role->load('permissions')))->response()->setStatusCode(201);
+        return new RoleResource($role->load('permissions'))->response()->setStatusCode(201);
     }
 
     public function show(Role $role): RoleResource

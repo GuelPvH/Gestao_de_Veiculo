@@ -46,7 +46,7 @@ final class UserController extends Controller
         $user = $createUser->handle($data, $actor);
         Password::sendResetLink(['email' => $user->email]);
 
-        return (new UserResource($user))->response()->setStatusCode(201);
+        return new UserResource($user)->response()->setStatusCode(201);
     }
 
     public function show(User $user): UserResource

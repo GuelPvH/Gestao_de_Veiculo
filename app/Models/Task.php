@@ -12,13 +12,14 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Carbon;
 
 /**
  * @property TaskStatus $status
  * @property Priority $priority
- * @property \Illuminate\Support\Carbon|null $due_date
- * @property \Illuminate\Support\Carbon|null $started_at
- * @property \Illuminate\Support\Carbon|null $completed_at
+ * @property Carbon|null $due_date
+ * @property Carbon|null $started_at
+ * @property Carbon|null $completed_at
  * @property Project $project
  */
 #[Fillable([
@@ -66,7 +67,7 @@ class Task extends Model
     }
 
     /** @param Builder<Task> $query */
-    public function scopeVisibleTo(Builder $query, User $user): void
+    protected function scopeVisibleTo(Builder $query, User $user): void
     {
         if ($user->hasPermission('task.view_all')) {
             return;

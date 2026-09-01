@@ -10,11 +10,12 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Carbon;
 
 /**
  * @property LeadStatus $status
- * @property \Illuminate\Support\Carbon|null $desired_deadline
- * @property \Illuminate\Support\Carbon|null $converted_at
+ * @property Carbon|null $desired_deadline
+ * @property Carbon|null $converted_at
  */
 #[Fillable([
     'name', 'company', 'email', 'phone', 'source', 'project_type', 'status',

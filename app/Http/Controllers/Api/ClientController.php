@@ -41,7 +41,7 @@ final class ClientController extends Controller
         $client->setAttribute('created_by', $request->user()?->getAuthIdentifier());
         $client->save();
 
-        return (new ClientResource($client))->response()->setStatusCode(201);
+        return new ClientResource($client)->response()->setStatusCode(201);
     }
 
     public function show(Client $client): ClientResource
