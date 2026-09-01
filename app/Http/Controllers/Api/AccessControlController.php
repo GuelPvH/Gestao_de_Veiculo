@@ -13,7 +13,6 @@ use App\Http\Resources\UserResource;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
-use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\Gate;
 
