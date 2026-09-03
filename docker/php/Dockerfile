@@ -134,7 +134,7 @@ CMD ["php-fpm", "--nodaemonize"]
 
 
 # -----------------------------------------------------------------------------
-# dev — OPcache revalidando, Xdebug e PCOV disponíveis
+# dev — OPcache revalidando e shell de desenvolvimento
 # -----------------------------------------------------------------------------
 FROM base AS dev
 
@@ -144,18 +144,7 @@ FROM base AS dev
 # digita por reflexo. A imagem `prod` continua sem bash, enxuta.
 RUN apk add --no-cache bash
 
-# PCOV para cobertura (rápido), Xdebug para step debugging (lento).
-# Xdebug fica carregado porém em `mode=off`; liga-se pela env XDEBUG_MODE.
-RUN set -eux; \
-    apk add --no-cache --virtual .build-deps $PHPIZE_DEPS linux-headers; \
-    pecl install pcov xdebug; \
-    docker-php-ext-enable pcov xdebug; \
-    pecl clear-cache; \
-    apk del .build-deps; \
-    rm -rf /tmp/pear
-
 COPY docker/php/conf.d/opcache-dev.ini /usr/local/etc/php/conf.d/zz-opcache.ini
-COPY docker/php/conf.d/xdebug.ini      /usr/local/etc/php/conf.d/zzz-xdebug.ini
 
 HEALTHCHECK --interval=15s --timeout=5s --start-period=30s --retries=5 \
     CMD ["php-fpm-healthcheck"]
