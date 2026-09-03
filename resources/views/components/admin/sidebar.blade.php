@@ -1,11 +1,11 @@
 @php
     $items = [
-        ['label' => 'Dashboard', 'icon' => 'bi-pie-chart-fill', 'active' => true],
+        ['label' => 'Dashboard', 'icon' => 'bi-pie-chart-fill', 'route' => 'admin.dashboard', 'active' => 'admin.dashboard'],
         ['label' => 'Leads/Orçamentos', 'icon' => 'bi-people-fill'],
         ['label' => 'Projetos', 'icon' => 'bi-briefcase-fill'],
         ['label' => 'Serviços', 'icon' => 'bi-layers-fill'],
         ['label' => 'Financeiro', 'icon' => 'bi-wallet2'],
-        ['label' => 'Configurações', 'icon' => 'bi-gear-fill'],
+        ['label' => 'Configurações', 'icon' => 'bi-gear-fill', 'route' => 'admin.settings.profile', 'active' => 'admin.settings.*'],
     ];
 @endphp
 
@@ -18,7 +18,8 @@
 
     <nav class="nav nav-pills flex-column gap-1 flex-grow-1 px-3 py-2">
         @foreach ($items as $item)
-            <a href="{{ $item['active'] ?? false ? route('admin.dashboard') : '#' }}" class="nav-link {{ $item['active'] ?? false ? 'active' : '' }}" @if ($item['active'] ?? false) aria-current="page" @endif>
+            @php($isActive = isset($item['active']) && request()->routeIs($item['active']))
+            <a href="{{ isset($item['route']) ? route($item['route']) : '#' }}" class="nav-link {{ $isActive ? 'active' : '' }}" @if ($isActive) aria-current="page" @endif>
                 <i class="bi {{ $item['icon'] }}" aria-hidden="true"></i>
                 <span>{{ $item['label'] }}</span>
             </a>
