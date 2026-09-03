@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', [VehicleController::class, 'index'])->name('vehicles.index');
 
+Route::view('/admin/dashboard', 'pages.admin.dashboard')->name('admin.dashboard');
+
 Route::get('/up/deep', function () {
     $checks = [
         'app' => true,
