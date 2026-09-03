@@ -17,7 +17,7 @@
         <div>
             <div class="metric-value">{{ $value }}</div>
             @if ($note)
-                <div class="metric-note mt-2">{!! $note !!}</div>
+                <div class="metric-note mt-2">{{ $note }}</div>
             @endif
         </div>
     </div>
