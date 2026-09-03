@@ -134,18 +134,14 @@ CMD ["php-fpm", "--nodaemonize"]
 
 
 # -----------------------------------------------------------------------------
-# dev — OPcache revalidando, Xdebug e PCOV disponíveis
+# dev — bash, PCOV/Xdebug e configuração de desenvolvimento
 # -----------------------------------------------------------------------------
 FROM base AS dev
 
-# `bash` só no stage de desenvolvimento: a imagem base é Alpine, que traz
-# apenas `sh` (BusyBox). Sem isto, `docker exec -it <container> bash` falha
-# com "exec: bash: not found" — que é justamente o comando que todo mundo
-# digita por reflexo. A imagem `prod` continua sem bash, enxuta.
+# Bash para desenvolvimento
 RUN apk add --no-cache bash
 
-# PCOV para cobertura (rápido), Xdebug para step debugging (lento).
-# Xdebug fica carregado porém em `mode=off`; liga-se pela env XDEBUG_MODE.
+# PCOV para cobertura e Xdebug para debugging
 RUN set -eux; \
     apk add --no-cache --virtual .build-deps $PHPIZE_DEPS linux-headers; \
     pecl install pcov xdebug; \
@@ -155,7 +151,7 @@ RUN set -eux; \
     rm -rf /tmp/pear
 
 COPY docker/php/conf.d/opcache-dev.ini /usr/local/etc/php/conf.d/zz-opcache.ini
-COPY docker/php/conf.d/xdebug.ini      /usr/local/etc/php/conf.d/zzz-xdebug.ini
+COPY docker/php/conf.d/xdebug.ini /usr/local/etc/php/conf.d/zzz-xdebug.ini
 
 HEALTHCHECK --interval=15s --timeout=5s --start-period=30s --retries=5 \
     CMD ["php-fpm-healthcheck"]
