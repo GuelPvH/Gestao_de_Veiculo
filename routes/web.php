@@ -12,6 +12,18 @@ Route::get('/', [VehicleController::class, 'index'])->name('vehicles.index');
 Route::view('/admin/dashboard', 'pages.admin.dashboard')
     ->middleware(['auth', 'can:viewPulse'])
     ->name('admin.dashboard');
+
+Route::middleware(['auth', 'can:viewPulse'])
+    ->prefix('admin/configuracoes')
+    ->name('admin.settings.')
+    ->group(function (): void {
+        Route::view('/', 'pages.admin.settings.profile')->name('profile');
+        Route::view('/empresa', 'pages.admin.settings.company')->name('company');
+        Route::view('/notificacoes', 'pages.admin.settings.notifications')->name('notifications');
+        Route::view('/seguranca', 'pages.admin.settings.security')->name('security');
+        Route::view('/integracoes', 'pages.admin.settings.integrations')->name('integrations');
+    });
+
 Route::view('/publico', 'pages.publico.index')->name('publico.index');
 
 Route::get('/up/deep', function () {
