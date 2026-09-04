@@ -1,0 +1,108 @@
+// --- Dashboard administrativo ----------------------------------------------
+.admin-dashboard-body {
+    min-width: 320px;
+    background: #f8fafc;
+    color: var(--admin-ink);
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+.admin-shell { min-height: 100vh; }
+
+.admin-sidebar {
+    position: fixed;
+    inset: 0 auto 0 0;
+    z-index: 1030;
+    display: flex;
+    width: var(--admin-sidebar-width);
+    flex-direction: column;
+    background: #fff;
+    border-right: 1px solid var(--admin-border);
+}
+
+.admin-brand {
+    height: 72px;
+    padding: 20px 24px;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.admin-brand-mark {
+    display: grid;
+    width: 32px;
+    height: 32px;
+    place-items: center;
+    border-radius: 4px;
+    background: var(--admin-blue);
+    color: #fff;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.admin-sidebar .nav-link {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    padding: 10px 12px;
+    border-radius: 8px;
+    color: var(--admin-muted);
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.admin-sidebar .nav-link:hover { background: #eff6ff; color: var(--admin-blue); }
+.admin-sidebar .nav-link.active { background: var(--admin-blue); color: #fff; }
+.admin-sidebar .nav-link .bi { width: 20px; text-align: center; }
+
+.admin-user { border-top: 1px solid var(--admin-border); }
+.admin-avatar { width: 36px; height: 36px; object-fit: cover; }
+.admin-avatar-sm { width: 32px; height: 32px; object-fit: cover; }
+
+.admin-main { min-width: 0; margin-left: var(--admin-sidebar-width); }
+.admin-topbar {
+    position: sticky;
+    top: 0;
+    z-index: 1020;
+    height: 72px;
+    padding: 0 32px;
+    background: rgb(255 255 255 / 92%);
+    border-bottom: 1px solid var(--admin-border);
+    backdrop-filter: blur(10px);
+}
+
+.admin-search { width: 256px; }
+.admin-search .form-control { height: 40px; padding-left: 36px; background: #f9fafb; border-color: var(--admin-border); }
+.admin-search .bi { left: 13px; color: #9ca3af; }
+.admin-notification-dot { position: absolute; top: 1px; right: 0; width: 7px; height: 7px; border: 2px solid #fff; border-radius: 50%; background: #ef4444; }
+.admin-content { padding: 32px; }
+
+// --- Responsividade do painel administrativo -------------------------------
+@media (max-width: 991.98px) {
+    .admin-sidebar { transform: translateX(-100%); }
+    .admin-sidebar.show { transform: translateX(0); box-shadow: 0 0 0 100vmax rgb(7 20 38 / 35%); }
+    .admin-main { margin-left: 0; }
+    .admin-topbar { padding: 0 16px; }
+    .admin-content { padding: 20px 16px; }
+    .settings-grid { grid-template-columns: 1fr; }
+    .settings-sidebar { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .projects-page { width: 100%; }
+    .project-board { grid-template-columns: repeat(4, 310px); }
+}
+
+@media (max-width: 575.98px) {
+    .admin-search { width: auto; }
+    .admin-search .form-control { width: 42px; padding-right: 0; color: transparent; cursor: pointer; }
+    .admin-search .form-control:focus { width: 180px; padding-right: 12px; color: inherit; }
+    .settings-heading h1 { font-size: 21px; }
+    .settings-tab { padding-inline: 14px; }
+    .settings-card-header, .settings-card-body { padding-inline: 16px; }
+    .settings-field { grid-template-columns: 1fr; gap: 6px; }
+    .settings-field + .settings-field { margin-top: 16px; }
+    .settings-sidebar { grid-template-columns: 1fr; }
+    .settings-option { align-items: flex-start; }
+    .projects-heading h1 { font-size: 21px; }
+    .project-toolbar { align-items: stretch !important; }
+    .project-toolbar > div { width: 100%; }
+    .project-new-button { width: 100%; }
+    .project-board { min-width: max-content; grid-template-columns: repeat(4, min(310px, calc(100vw - 34px))); }
+    .project-timeline { align-items: flex-start !important; }
+    .project-timeline-button { width: 100%; justify-content: center; }
+}
