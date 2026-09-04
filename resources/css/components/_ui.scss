@@ -59,6 +59,7 @@
 
 .ui-tone-blue { background: #eff6ff; color: var(--color-primary); }
 .ui-tone-purple { background: #faf5ff; color: #9333ea; }
+.ui-tone-orange { background: #fff7ed; color: #f97316; }
 .ui-tone-green { background: #ecfdf5; color: #059669; }
 .ui-tone-yellow { background: #fffbeb; color: #ca8a04; }
 .ui-tone-red { background: #fef2f2; color: #dc2626; }
@@ -127,6 +128,32 @@
 .ui-avatar-sm { width: 2rem; height: 2rem; }
 .ui-avatar-md { width: 2.25rem; height: 2.25rem; }
 .ui-avatar-lg { width: 5rem; height: 5rem; }
+
+.ui-detail-row {
+    display: flex;
+    gap: 0.5rem;
+    align-items: flex-start;
+    padding-block: 1rem;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.ui-detail-row:first-child { padding-top: 0; }
+.ui-detail-row:last-child { padding-bottom: 0; border-bottom: 0; }
+
+.ui-detail-icon {
+    display: grid;
+    width: 1.75rem;
+    height: 1.75rem;
+    flex: 0 0 auto;
+    place-items: center;
+    border-radius: var(--radius-sm);
+    font-size: 0.6875rem;
+}
+
+.ui-detail-copy { display: grid; min-width: 0; flex: 1; gap: 0.125rem; }
+.ui-detail-title { color: #374151; font-size: 0.6875rem; font-weight: 600; }
+.ui-detail-value { color: var(--color-ink); font-size: var(--font-size-sm); font-weight: 500; }
+.ui-detail-meta { color: var(--color-subtle); font-size: var(--font-size-xs); }
 
 .ui-metric-card {
     border-color: var(--color-border);

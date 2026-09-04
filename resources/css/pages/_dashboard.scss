@@ -1,14 +1,5 @@
 // --- Dashboard administrativo ----------------------------------------------
 .dashboard-card { border-color: var(--admin-border); border-radius: 10px; box-shadow: none; }
-.metric-card { min-height: 130px; }
-.metric-label { color: #4b5563; font-size: 13px; font-weight: 500; }
-.metric-value { color: var(--admin-ink); font-size: 25px; font-weight: 700; line-height: 1.15; }
-.metric-note { color: #9ca3af; font-size: 11px; }
-.metric-icon { display: grid; width: 32px; height: 32px; place-items: center; border-radius: 8px; }
-.metric-icon-blue { background: #eff6ff; color: #2563eb; }
-.metric-icon-purple { background: #faf5ff; color: #9333ea; }
-.metric-icon-green { background: #ecfdf5; color: #10b981; }
-.metric-icon-yellow { background: #fffbeb; color: #eab308; }
 
 .chart-card { min-height: 294px; }
 .chart-area { height: 202px; padding: 14px 8px 0 32px; }

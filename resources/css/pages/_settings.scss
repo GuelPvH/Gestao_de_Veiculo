@@ -67,57 +67,8 @@
     gap: 20px;
 }
 
-.settings-card {
-    overflow: hidden;
-    border-color: var(--admin-border);
-    border-radius: 12px;
-    box-shadow: 0 1px 2px rgb(0 0 0 / 4%);
-}
-
-.settings-card-header {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    min-height: 72px;
-    padding: 14px 24px;
-    border-bottom: 1px solid var(--admin-border);
-}
-
-.settings-card-header h2 {
-    margin: 0;
-    color: #1f2937;
-    font-size: 14px;
-    font-weight: 600;
-    line-height: 22px;
-}
-
-.settings-card-header p {
-    margin: 0;
-    color: #9ca3af;
-    font-size: 11px;
-    line-height: 16px;
-}
-
-.settings-card-icon {
-    display: grid;
-    width: 32px;
-    height: 32px;
-    flex: 0 0 auto;
-    place-items: center;
-    border-radius: 8px;
-    font-size: 13px;
-}
-
-.settings-card-icon-blue { background: #eff6ff; color: #2563eb; }
-.settings-card-icon-purple { background: #faf5ff; color: #9333ea; }
-.settings-card-icon-green { background: #ecfdf5; color: #059669; }
-.settings-card-icon-yellow { background: #fffbeb; color: #ca8a04; }
-.settings-card-icon-red { background: #fef2f2; color: #dc2626; }
-
-.settings-card-body {
-    padding: 20px 24px;
-}
-
+// Fieldsets de escolhas continuam especificos desta pagina; inputs e selects
+// usam o componente horizontal `.form-field`.
 .settings-field {
     display: grid;
     grid-template-columns: 160px minmax(0, 1fr);
@@ -181,23 +132,17 @@
     font-weight: 500;
 }
 
-.settings-side-card .settings-card-header {
+.settings-side-card .ui-panel-header {
     min-height: 52px;
     padding: 14px 20px;
 }
 
-.settings-side-card .settings-card-body {
+.settings-side-card .ui-panel-body {
     padding: 16px 20px;
 }
 
-.settings-side-card .settings-card-header h2 {
+.settings-side-card .ui-panel-heading h2 {
     font-size: 13px;
-}
-
-.settings-profile-avatar {
-    width: 80px;
-    height: 80px;
-    object-fit: cover;
 }
 
 .settings-avatar-action {
@@ -215,27 +160,9 @@
     font-size: 10px;
 }
 
-.settings-detail-row {
-    padding-block: 16px;
-    border-bottom: 1px solid #f3f4f6;
-}
-
-.settings-detail-row:first-child { padding-top: 0; }
-.settings-detail-row:last-child { padding-bottom: 0; border-bottom: 0; }
-
-.settings-detail-icon {
-    display: grid;
-    width: 28px;
-    height: 28px;
-    flex: 0 0 auto;
-    place-items: center;
-    border-radius: 8px;
-    font-size: 11px;
-}
-
-.settings-detail-title { color: #374151; font-size: 11px; font-weight: 600; }
-.settings-detail-value { color: var(--admin-ink); font-size: 12px; font-weight: 500; }
-.settings-detail-meta { color: #9ca3af; font-size: 10px; }
+.settings-role { font-size: var(--font-size-xs); }
+.settings-upload-help { font-size: 0.5625rem; }
+.settings-company-logo { width: 4.5rem; height: 4.5rem; font-size: 1.875rem; }
 
 .settings-quick-link {
     display: flex;
