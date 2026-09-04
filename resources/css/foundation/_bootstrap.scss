@@ -1,0 +1,11 @@
+// Bootstrap vem do npm e e compilado junto com os estilos da aplicacao. As
+// customizacoes precisam ser declaradas antes da carga do framework.
+$primary: #1f6feb;
+$border-radius: 0.5rem;
+$enable-shadows: false;
+
+@use 'bootstrap/scss/bootstrap' with (
+    $primary: $primary,
+    $border-radius: $border-radius,
+    $enable-shadows: $enable-shadows
+);

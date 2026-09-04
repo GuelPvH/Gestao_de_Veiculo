@@ -23,39 +23,31 @@
             </x-admin.settings.section-card>
 
             <x-admin.settings.section-card title="Webhooks" subtitle="Envie eventos do sistema para aplicações externas" icon="bi-broadcast-pin" tone="purple">
-                <div class="settings-field">
-                    <label for="webhook-url" class="settings-label">URL de destino</label>
-                    <input id="webhook-url" type="url" class="form-control settings-control" placeholder="https://exemplo.com/webhooks/deploy">
-                </div>
-                <div class="settings-field">
-                    <label for="webhook-event" class="settings-label">Evento</label>
-                    <select id="webhook-event" class="form-select settings-control">
-                        <option selected>Lead criado</option>
-                        <option>Projeto atualizado</option>
-                        <option>Pagamento confirmado</option>
-                    </select>
-                </div>
+                <x-form.field id="webhook-url" name="webhook_url" label="URL de destino">
+                    <x-form.input id="webhook-url" name="webhook_url" type="url" placeholder="https://exemplo.com/webhooks/deploy" />
+                </x-form.field>
+                <x-form.field id="webhook-event" name="webhook_event" label="Evento">
+                    <x-form.select id="webhook-event" name="webhook_event">
+                        <option value="lead.created" selected>Lead criado</option>
+                        <option value="project.updated">Projeto atualizado</option>
+                        <option value="payment.confirmed">Pagamento confirmado</option>
+                    </x-form.select>
+                </x-form.field>
                 <div class="settings-save-bar mt-4"><button type="button" class="btn btn-primary">Adicionar Webhook</button></div>
             </x-admin.settings.section-card>
         </div>
 
         <aside class="settings-column settings-sidebar" aria-label="Resumo das integrações">
             <x-admin.settings.section-card title="Status das Conexões" class="settings-side-card">
-                <div class="settings-detail-row">
-                    <span class="settings-detail-title d-block mb-1">Integrações ativas</span>
-                    <strong class="settings-detail-value">1 de 4</strong>
-                </div>
-                <div class="settings-detail-row">
-                    <span class="settings-detail-title d-block mb-1">Última sincronização</span>
-                    <strong class="settings-detail-value">Hoje, 09:42</strong>
-                </div>
+                <x-ui.detail-row title="Integrações ativas" value="1 de 4" />
+                <x-ui.detail-row title="Última sincronização" value="Hoje, 09:42" />
             </x-admin.settings.section-card>
 
             <x-admin.settings.section-card title="Chave da API" class="settings-side-card">
-                <p class="settings-detail-meta">Use esta chave apenas em ambientes seguros.</p>
+                <p class="ui-detail-meta">Use esta chave apenas em ambientes seguros.</p>
                 <div class="input-group input-group-sm mb-2">
-                    <input type="password" class="form-control" value="deploy_live_123456" readonly aria-label="Chave da API">
-                    <button type="button" class="btn btn-outline-secondary" aria-label="Copiar chave"><i class="bi bi-copy" aria-hidden="true"></i></button>
+                    <input id="api-key" type="password" class="form-control" value="chave_oculta" readonly aria-label="Chave da API">
+                    <button type="button" class="btn btn-outline-secondary" data-copy-target="#api-key" aria-label="Copiar chave"><i class="bi bi-copy" aria-hidden="true"></i></button>
                 </div>
                 <button type="button" class="btn btn-outline-danger btn-sm w-100">Gerar nova chave</button>
             </x-admin.settings.section-card>

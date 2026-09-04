@@ -2,18 +2,15 @@
     <div class="settings-grid">
         <form class="settings-column" aria-label="Configurações de segurança">
             <x-admin.settings.section-card id="password" title="Alterar Senha" subtitle="Use uma senha forte e exclusiva para sua conta" icon="bi-lock-fill">
-                <div class="settings-field">
-                    <label for="current-password" class="settings-label">Senha atual</label>
-                    <input id="current-password" type="password" class="form-control settings-control" placeholder="Digite sua senha atual">
-                </div>
-                <div class="settings-field">
-                    <label for="new-password" class="settings-label">Nova senha <small>Mínimo de 8 caracteres</small></label>
-                    <input id="new-password" type="password" class="form-control settings-control" placeholder="Crie uma nova senha">
-                </div>
-                <div class="settings-field">
-                    <label for="confirm-password" class="settings-label">Confirmar senha</label>
-                    <input id="confirm-password" type="password" class="form-control settings-control" placeholder="Repita a nova senha">
-                </div>
+                <x-form.field id="current-password" name="current_password" label="Senha atual">
+                    <x-form.input id="current-password" name="current_password" type="password" placeholder="Digite sua senha atual" autocomplete="current-password" />
+                </x-form.field>
+                <x-form.field id="new-password" name="password" label="Nova senha" help="Mínimo de 8 caracteres">
+                    <x-form.input id="new-password" name="password" type="password" placeholder="Crie uma nova senha" autocomplete="new-password" />
+                </x-form.field>
+                <x-form.field id="confirm-password" name="password_confirmation" label="Confirmar senha">
+                    <x-form.input id="confirm-password" name="password_confirmation" type="password" placeholder="Repita a nova senha" autocomplete="new-password" />
+                </x-form.field>
             </x-admin.settings.section-card>
 
             <x-admin.settings.section-card id="two-factor" title="Autenticação em Duas Etapas" subtitle="Adicione uma camada extra de proteção ao acesso" icon="bi-shield-lock-fill" tone="purple">
@@ -34,25 +31,17 @@
 
         <aside class="settings-column settings-sidebar" aria-label="Sessões e segurança">
             <x-admin.settings.section-card title="Nível de Segurança" class="settings-side-card">
-                <div class="d-flex align-items-center gap-3 mb-3">
-                    <span class="settings-detail-icon settings-card-icon-yellow"><i class="bi bi-shield-exclamation" aria-hidden="true"></i></span>
-                    <div><strong class="settings-detail-value d-block">Segurança média</strong><span class="settings-detail-meta">Ative a autenticação 2FA</span></div>
-                </div>
-                <div class="progress" role="progressbar" aria-label="Nível de segurança" aria-valuenow="66" aria-valuemin="0" aria-valuemax="100" style="height: 6px">
-                    <div class="progress-bar bg-warning" style="width: 66%"></div>
-                </div>
+                <x-ui.detail-row title="Segurança média" meta="Ative a autenticação 2FA" icon="bi-shield-exclamation" tone="yellow" class="mb-3" />
+                <x-ui.progress value="66" label="Nível de segurança" tone="warning" />
             </x-admin.settings.section-card>
 
             <x-admin.settings.section-card title="Sessão Atual" class="settings-side-card">
-                <div class="d-flex gap-2 mb-3">
-                    <span class="settings-detail-icon settings-card-icon-blue"><i class="bi bi-laptop-fill" aria-hidden="true"></i></span>
-                    <div><strong class="settings-detail-value d-block">Chrome · Windows</strong><span class="settings-detail-meta">São Paulo, Brasil · Agora</span></div>
-                </div>
-                <span class="badge bg-success-subtle text-success"><span class="settings-status-dot me-1"></span>Esta sessão</span>
+                <x-ui.detail-row title="Chrome · Windows" meta="São Paulo, Brasil · Agora" icon="bi-laptop-fill" class="mb-3" />
+                <x-ui.badge tone="success"><span class="settings-status-dot me-1"></span>Esta sessão</x-ui.badge>
             </x-admin.settings.section-card>
 
             <x-admin.settings.section-card title="Zona de Risco" class="settings-side-card border-danger-subtle">
-                <p class="settings-detail-meta">Encerre todos os acessos ativos, incluindo este dispositivo.</p>
+                <p class="ui-detail-meta">Encerre todos os acessos ativos, incluindo este dispositivo.</p>
                 <button type="button" class="btn btn-outline-danger btn-sm w-100"><i class="bi bi-box-arrow-right me-1" aria-hidden="true"></i> Encerrar sessões</button>
             </x-admin.settings.section-card>
         </aside>

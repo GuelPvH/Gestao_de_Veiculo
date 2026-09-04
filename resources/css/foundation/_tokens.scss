@@ -1,0 +1,32 @@
+:root {
+    // Cores semanticas. Componentes devem depender do papel da cor, nao do seu
+    // valor literal, para permitir temas e ajustes de contraste no futuro.
+    --color-primary: #2563eb;
+    --color-ink: #071426;
+    --color-muted: #6b7280;
+    --color-subtle: #9ca3af;
+    --color-border: #e5e7eb;
+    --color-surface: #fff;
+    --color-canvas: #f8fafc;
+    --color-success: #10b981;
+    --color-warning: #eab308;
+    --color-danger: #ef4444;
+
+    // Escalas compartilhadas.
+    --font-size-xs: 0.625rem;
+    --font-size-sm: 0.75rem;
+    --font-size-md: 0.875rem;
+    --radius-sm: 0.5rem;
+    --radius-md: 0.75rem;
+    --shadow-card: 0 1px 2px rgb(0 0 0 / 5%);
+
+    // Dimensoes estruturais do painel.
+    --admin-sidebar-width: 15rem;
+    --admin-topbar-height: 4.5rem;
+
+    // Aliases temporarios preservam os seletores atuais durante a migracao.
+    --admin-blue: var(--color-primary);
+    --admin-ink: var(--color-ink);
+    --admin-muted: var(--color-muted);
+    --admin-border: var(--color-border);
+}

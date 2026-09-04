@@ -1,0 +1,227 @@
+// --- Configurações ----------------------------------------------------------
+.settings-heading {
+    margin-bottom: 24px;
+}
+
+.settings-heading h1 {
+    margin: 0 0 2px;
+    color: var(--admin-ink);
+    font-size: 24px;
+    font-weight: 700;
+    line-height: 1.35;
+}
+
+.settings-heading p {
+    margin: 0;
+    color: var(--admin-muted);
+    font-size: 13px;
+}
+
+.settings-tabs {
+    display: flex;
+    overflow-x: auto;
+    border-bottom: 1px solid var(--admin-border);
+    scrollbar-width: thin;
+}
+
+.settings-tab {
+    display: inline-flex;
+    flex: 0 0 auto;
+    gap: 8px;
+    align-items: center;
+    padding: 12px 20px 13px;
+    margin-bottom: -1px;
+    border-bottom: 2px solid transparent;
+    color: var(--admin-muted);
+    font-size: 13px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: color 150ms ease, border-color 150ms ease;
+}
+
+.settings-tab:hover,
+.settings-tab:focus-visible {
+    border-color: #bfdbfe;
+    color: var(--admin-blue);
+}
+
+.settings-tab.active {
+    border-color: var(--admin-blue);
+    color: var(--admin-blue);
+}
+
+.settings-content {
+    padding-top: 24px;
+}
+
+.settings-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 300px;
+    gap: 20px;
+    align-items: start;
+}
+
+.settings-column {
+    display: grid;
+    min-width: 0;
+    gap: 20px;
+}
+
+// Fieldsets de escolhas continuam especificos desta pagina; inputs e selects
+// usam o componente horizontal `.form-field`.
+.settings-field {
+    display: grid;
+    grid-template-columns: 160px minmax(0, 1fr);
+    gap: 16px;
+    align-items: center;
+}
+
+.settings-field + .settings-field {
+    margin-top: 20px;
+}
+
+.settings-label {
+    margin: 0;
+    color: #374151;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.settings-label small {
+    display: block;
+    color: #9ca3af;
+    font-size: 10px;
+    font-weight: 400;
+}
+
+.settings-control {
+    min-height: 40px;
+    border-color: var(--admin-border);
+    color: #374151;
+    font-size: 12px;
+}
+
+.settings-control:focus {
+    border-color: #93c5fd;
+    box-shadow: 0 0 0 3px rgb(37 99 235 / 10%);
+}
+
+.settings-input-icon {
+    position: absolute;
+    top: 50%;
+    left: 13px;
+    z-index: 4;
+    color: #9ca3af;
+    font-size: 12px;
+    transform: translateY(-50%);
+}
+
+.settings-input-icon + .settings-control {
+    padding-left: 34px;
+}
+
+.settings-save-bar {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.settings-save-bar .btn {
+    min-height: 42px;
+    padding-inline: 24px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.settings-side-card .ui-panel-header {
+    min-height: 52px;
+    padding: 14px 20px;
+}
+
+.settings-side-card .ui-panel-body {
+    padding: 16px 20px;
+}
+
+.settings-side-card .ui-panel-heading h2 {
+    font-size: 13px;
+}
+
+.settings-avatar-action {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    display: grid;
+    width: 24px;
+    height: 24px;
+    place-items: center;
+    border: 2px solid #fff;
+    border-radius: 50%;
+    background: var(--admin-blue);
+    color: #fff;
+    font-size: 10px;
+}
+
+.settings-role { font-size: var(--font-size-xs); }
+.settings-upload-help { font-size: 0.5625rem; }
+.settings-company-logo { width: 4.5rem; height: 4.5rem; font-size: 1.875rem; }
+
+.settings-quick-link {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid #f3f4f6;
+    color: #374151;
+    font-size: 12px;
+    text-decoration: none;
+}
+
+.settings-quick-link:first-child { padding-top: 0; }
+.settings-quick-link:last-child { padding-bottom: 0; border-bottom: 0; }
+.settings-quick-link:hover { color: var(--admin-blue); }
+
+.settings-choice {
+    min-width: 86px;
+    border-color: var(--admin-border);
+    color: #4b5563;
+    font-size: 12px;
+}
+
+.settings-choice.active {
+    border-color: var(--admin-blue);
+    background: var(--admin-blue);
+    color: #fff;
+}
+
+.settings-option {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    justify-content: space-between;
+    padding: 17px 0;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.settings-option:first-child { padding-top: 0; }
+.settings-option:last-child { padding-bottom: 0; border-bottom: 0; }
+.settings-option h3 { margin: 0 0 2px; color: #374151; font-size: 13px; font-weight: 600; }
+.settings-option p { margin: 0; color: #9ca3af; font-size: 11px; }
+
+.settings-integration-logo {
+    display: grid;
+    width: 42px;
+    height: 42px;
+    flex: 0 0 auto;
+    place-items: center;
+    border-radius: 10px;
+    background: #f8fafc;
+    color: var(--admin-blue);
+    font-size: 20px;
+}
+
+.settings-status-dot {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+}
