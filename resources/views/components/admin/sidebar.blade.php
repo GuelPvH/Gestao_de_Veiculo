@@ -2,7 +2,7 @@
     $items = [
         ['label' => 'Dashboard', 'icon' => 'bi-pie-chart-fill', 'route' => 'admin.dashboard', 'active' => 'admin.dashboard'],
         ['label' => 'Leads/Orçamentos', 'icon' => 'bi-people-fill'],
-        ['label' => 'Projetos', 'icon' => 'bi-briefcase-fill'],
+        ['label' => 'Projetos', 'icon' => 'bi-briefcase-fill', 'route' => 'admin.projects.index', 'active' => 'admin.projects.*'],
         ['label' => 'Serviços', 'icon' => 'bi-layers-fill'],
         ['label' => 'Financeiro', 'icon' => 'bi-wallet2'],
         ['label' => 'Configurações', 'icon' => 'bi-gear-fill', 'route' => 'admin.settings.profile', 'active' => 'admin.settings.*'],

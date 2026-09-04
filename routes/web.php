@@ -13,6 +13,10 @@ Route::view('/admin/dashboard', 'pages.admin.dashboard')
     ->middleware(['auth', 'can:viewPulse'])
     ->name('admin.dashboard');
 
+Route::view('/admin/projetos', 'pages.admin.projects.index')
+    ->middleware(['auth', 'can:viewPulse'])
+    ->name('admin.projects.index');
+
 Route::middleware(['auth', 'can:viewPulse'])
     ->prefix('admin/configuracoes')
     ->name('admin.settings.')
