@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\ProjectController;
+use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\VehicleController;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redis;
