@@ -12,10 +12,11 @@
 
 <x-admin.layout title="Configurações" page="Configurações">
     <div class="settings-page">
-        <header class="settings-heading">
-            <h1>Configurações</h1>
-            <p>Gerencie suas preferências e configurações da conta</p>
-        </header>
+        <x-ui.page-header
+            class="settings-heading"
+            title="Configurações"
+            subtitle="Gerencie suas preferências e configurações da conta"
+        />
 
         <nav class="settings-tabs" aria-label="Seções de configurações">
             @foreach ($tabs as $key => $tab)
