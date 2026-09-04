@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\VehicleController;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redis;
@@ -9,12 +10,25 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', [VehicleController::class, 'index'])->name('vehicles.index');
 
+Route::middleware('guest')->group(function (): void {
+    Route::get('/login', [AuthenticatedSessionController::class, 'create'])->name('login');
+    Route::post('/login', [AuthenticatedSessionController::class, 'store'])
+        ->middleware('throttle:login')
+        ->name('login.store');
+});
+
+Route::delete('/logout', [AuthenticatedSessionController::class, 'destroy'])
+    ->middleware('auth')
+    ->name('logout');
+
 Route::view('/admin/dashboard', 'pages.admin.dashboard')
-    ->middleware(['auth', 'can:viewPulse'])
     ->name('admin.dashboard');
 
-Route::middleware(['auth', 'can:viewPulse'])
-    ->prefix('admin/configuracoes')
+Route::view('/admin/projetos', 'pages.admin.projects.index')
+    ->name('admin.projects.index');
+
+// A proteção por autenticação será reativada quando o módulo de acesso estiver pronto.
+Route::prefix('admin/configuracoes')
     ->name('admin.settings.')
     ->group(function (): void {
         Route::view('/', 'pages.admin.settings.profile')->name('profile');
