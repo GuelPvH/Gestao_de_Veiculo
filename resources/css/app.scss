@@ -1,42 +1,12 @@
-// =============================================================================
-// Bootstrap 5 vem do npm, compilado aqui — nunca de CDN.
-// CDN + npm ao mesmo tempo significa carga dupla e versões divergentes.
-//
-// Importar o SCSS (e não o CSS pronto) é o que permite sobrescrever variáveis
-// antes da compilação: mudar a cor primária no CSS final exigiria caçar
-// dezenas de declarações.
-// =============================================================================
-
-// --- Sobrescritas de variáveis (antes do import do Bootstrap) ---------------
-$primary: #1f6feb;
-$border-radius: 0.5rem;
-$enable-shadows: false;
-
-@use 'bootstrap/scss/bootstrap' with (
-    $primary: $primary,
-    $border-radius: $border-radius,
-    $enable-shadows: $enable-shadows
-);
-
-// --- Tom Select, com o tema alinhado ao Bootstrap 5 -------------------------
-@use 'tom-select/dist/css/tom-select.bootstrap5.css';
-@use 'bootstrap-icons/font/bootstrap-icons.css';
-
-// --- Ajustes do projeto -----------------------------------------------------
-.fleet-table td,
-.fleet-table th {
-    vertical-align: middle;
-}
+// Este arquivo e apenas o ponto de entrada do Vite. Cada modulo abaixo possui
+// uma responsabilidade visual unica e pode evoluir sem transformar o bundle
+// principal em um arquivo monolitico.
+@use 'foundation/bootstrap';
+@use 'foundation/vendor';
+@use 'foundation/tokens';
+@use 'pages/vehicles';
 
 // --- Dashboard administrativo ----------------------------------------------
-:root {
-    --admin-sidebar-width: 240px;
-    --admin-blue: #2563eb;
-    --admin-ink: #071426;
-    --admin-muted: #6b7280;
-    --admin-border: #e5e7eb;
-}
-
 .admin-dashboard-body {
     min-width: 320px;
     background: #f8fafc;
