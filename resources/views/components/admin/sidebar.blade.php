@@ -29,11 +29,17 @@
     <div class="admin-user d-flex align-items-center gap-2 p-3">
         <img src="{{ asset('images/admin/admin-user.png') }}" alt="Foto do usuário administrador" class="admin-avatar rounded-circle border">
         <div class="min-w-0 flex-grow-1 lh-sm">
-            <strong class="d-block text-truncate" style="font-size: 13px">Admin User</strong>
-            <small class="d-block text-secondary text-truncate" style="font-size: 10px">admin@deploy.com.br</small>
+            <strong class="d-block text-truncate" style="font-size: 13px">{{ auth()->user()?->name ?? 'Acesso temporário' }}</strong>
+            <small class="d-block text-secondary text-truncate" style="font-size: 10px">{{ auth()->user()?->email ?? 'Sem autenticação' }}</small>
         </div>
-        <button type="button" class="btn btn-link p-0 text-secondary" aria-label="Sair">
-            <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
-        </button>
+        @auth
+            <form method="POST" action="{{ route('logout') }}">
+                @csrf
+                @method('DELETE')
+                <button type="submit" class="btn btn-link p-0 text-secondary" aria-label="Sair">
+                    <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
+                </button>
+            </form>
+        @endauth
     </div>
 </aside>
