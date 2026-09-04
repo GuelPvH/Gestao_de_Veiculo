@@ -1,0 +1,160 @@
+.page-heading {
+    display: flex;
+    gap: 1rem;
+    align-items: start;
+    justify-content: space-between;
+}
+
+.page-heading h1,
+.page-heading p { margin: 0; }
+
+.page-heading-actions,
+.ui-panel-actions { flex: 0 0 auto; }
+
+.ui-panel {
+    overflow: hidden;
+    border-color: var(--color-border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-card);
+}
+
+.ui-panel-header,
+.ui-panel-footer {
+    display: flex;
+    gap: 0.625rem;
+    align-items: center;
+    padding: 0.875rem 1.5rem;
+    border-color: var(--color-border);
+}
+
+.ui-panel-header { min-height: 4.5rem; border-bottom: 1px solid var(--color-border); }
+.ui-panel-footer { border-top: 1px solid var(--color-border); }
+.ui-panel-heading { min-width: 0; flex: 1; }
+
+.ui-panel-heading h2 {
+    margin: 0;
+    color: #1f2937;
+    font-size: var(--font-size-md);
+    font-weight: 600;
+    line-height: 1.375rem;
+}
+
+.ui-panel-heading p {
+    margin: 0;
+    color: var(--color-subtle);
+    font-size: 0.6875rem;
+    line-height: 1rem;
+}
+
+.ui-panel-icon,
+.ui-metric-icon {
+    display: grid;
+    flex: 0 0 auto;
+    place-items: center;
+    border-radius: var(--radius-sm);
+}
+
+.ui-panel-icon { width: 2rem; height: 2rem; font-size: 0.8125rem; }
+.ui-panel-body { padding: 1.25rem 1.5rem; }
+
+.ui-tone-blue { background: #eff6ff; color: var(--color-primary); }
+.ui-tone-purple { background: #faf5ff; color: #9333ea; }
+.ui-tone-green { background: #ecfdf5; color: #059669; }
+.ui-tone-yellow { background: #fffbeb; color: #ca8a04; }
+.ui-tone-red { background: #fef2f2; color: #dc2626; }
+
+.form-field {
+    display: grid;
+    grid-template-columns: 10rem minmax(0, 1fr);
+    gap: 1rem;
+    align-items: center;
+}
+
+.form-field + .form-field { margin-top: 1.25rem; }
+
+.form-field-label {
+    margin: 0;
+    color: #374151;
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+}
+
+.form-field-label small {
+    display: block;
+    color: var(--color-subtle);
+    font-size: var(--font-size-xs);
+    font-weight: 400;
+}
+
+.form-field-control { min-width: 0; }
+
+.ui-badge {
+    display: inline-flex;
+    align-items: center;
+    width: fit-content;
+    padding: 0.25rem 0.5rem;
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.ui-badge-pill { border-radius: 999px; }
+.ui-badge-primary { background: #eff6ff; color: #1d4ed8; }
+.ui-badge-success { background: #dcfce7; color: #15803d; }
+.ui-badge-warning { background: #fef3c7; color: #a16207; }
+.ui-badge-danger { background: #fee2e2; color: #dc2626; }
+.ui-badge-purple { background: #f3e8ff; color: #7e22ce; }
+.ui-badge-neutral { background: #f3f4f6; color: #4b5563; }
+
+.ui-progress-group,
+.ui-progress-copy { display: grid; gap: 0.25rem; }
+
+.ui-progress-copy {
+    grid-template-columns: 1fr auto;
+    color: var(--color-muted);
+    font-size: var(--font-size-sm);
+}
+
+.ui-progress { height: 0.375rem; border-radius: 999px; background: #f3f4f6; }
+.ui-progress .progress-bar { width: var(--progress-value); border-radius: inherit; }
+.ui-progress-primary .progress-bar { background: var(--color-primary); }
+.ui-progress-success .progress-bar { background: var(--color-success); }
+.ui-progress-warning .progress-bar { background: var(--color-warning); }
+.ui-progress-danger .progress-bar { background: var(--color-danger); }
+
+.ui-avatar { border: 1px solid var(--color-border); object-fit: cover; }
+.ui-avatar-xs { width: 1.5rem; height: 1.5rem; }
+.ui-avatar-sm { width: 2rem; height: 2rem; }
+.ui-avatar-md { width: 2.25rem; height: 2.25rem; }
+.ui-avatar-lg { width: 5rem; height: 5rem; }
+
+.ui-metric-card {
+    border-color: var(--color-border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-card);
+}
+
+.ui-metric-card .card-body {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.ui-metric-card-compact { min-height: 8.125rem; }
+.ui-metric-card-compact .card-body { padding: 1.5rem; }
+.ui-metric-card-large { min-height: 9.625rem; }
+.ui-metric-card-large .card-body { gap: 0.25rem; padding: 1.25rem; }
+.ui-metric-label, .ui-metric-note { color: var(--color-muted); font-size: var(--font-size-sm); }
+.ui-metric-label { font-weight: 600; }
+.ui-metric-value { color: var(--color-ink); font-size: 1.5625rem; font-weight: 700; line-height: 1.15; }
+.ui-metric-note { margin-top: 0.5rem; color: var(--color-subtle); font-size: 0.6875rem; }
+.ui-metric-icon { width: 2rem; height: 2rem; }
+.ui-metric-card-large .ui-metric-value { margin-top: 0.5rem; font-size: 1.875rem; line-height: 2.25rem; }
+.ui-metric-card-large .ui-metric-icon { width: 2.5rem; height: 2.5rem; font-size: 1.125rem; }
+
+@media (max-width: 575.98px) {
+    .page-heading { align-items: stretch; flex-direction: column; }
+    .form-field { grid-template-columns: 1fr; gap: 0.375rem; }
+    .form-field + .form-field { margin-top: 1rem; }
+    .ui-panel-header, .ui-panel-body, .ui-panel-footer { padding-inline: 1rem; }
+}
