@@ -1,0 +1,52 @@
+// --- Dashboard administrativo ----------------------------------------------
+.dashboard-card { border-color: var(--admin-border); border-radius: 10px; box-shadow: none; }
+
+.chart-card { min-height: 294px; }
+.chart-area { height: 202px; padding: 14px 8px 0 32px; }
+.chart-grid { position: absolute; inset: 16px 8px 39px 32px; background: repeating-linear-gradient(to bottom, transparent 0, transparent 47px, #f3f4f6 48px); }
+.chart-bars { position: relative; z-index: 1; display: flex; height: 100%; align-items: end; justify-content: space-around; }
+.chart-column { display: flex; height: 100%; flex: 1; flex-direction: column; justify-content: end; align-items: center; gap: 8px; }
+.chart-bar { width: min(64%, 78px); background: #bfdbfe; }
+.chart-column:nth-child(2) .chart-bar { background: #b7d4f7; }
+.chart-column:nth-child(3) .chart-bar { background: #93c5fd; }
+.chart-column:nth-child(4) .chart-bar { background: #bfdbfe; }
+.chart-column:nth-child(5) .chart-bar { background: #60a5fa; }
+.chart-column:nth-child(6) .chart-bar { background: #2563eb; }
+.chart-month { color: #9ca3af; font-size: 11px; }
+
+.status-donut {
+    display: grid;
+    width: 132px;
+    height: 132px;
+    margin: 12px auto 18px;
+    place-items: center;
+    border-radius: 50%;
+    background: conic-gradient(#2563eb 0 57%, #eab308 57% 71%, #10b981 71% 100%);
+}
+.status-donut::after { width: 82px; height: 82px; border-radius: 50%; background: #fff; content: ""; }
+.status-donut-label { z-index: 1; font-weight: 700; }
+.status-donut-label small { color: #9ca3af; font-size: 10px; font-weight: 400; }
+.status-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+.activity-card, .leads-card { min-height: 392px; }
+.section-title { font-size: 14px; font-weight: 600; }
+.activity-icon { display: grid; width: 28px; height: 28px; flex: 0 0 auto; place-items: center; border-radius: 50%; font-size: 12px; }
+.activity-line { position: absolute; top: 28px; bottom: -18px; left: 14px; border-left: 1px dashed #e5e7eb; }
+.activity-copy { font-size: 12px; }
+.activity-copy small { color: #9ca3af; font-size: 10px; }
+
+.leads-table { min-width: 690px; }
+.leads-table th { padding: 12px 16px; color: #9ca3af; font-size: 10px; font-weight: 500; letter-spacing: .02em; }
+.leads-table td { padding: 10px 16px; color: #6b7280; font-size: 11px; vertical-align: middle; }
+.lead-name { color: var(--admin-ink); font-size: 12px; font-weight: 600; }
+.lead-company { color: #9ca3af; font-size: 10px; }
+.soft-badge { padding: 4px 8px; border-radius: 999px; font-size: 10px; font-weight: 600; white-space: nowrap; }
+.badge-blue { background: #eff6ff; color: #1d4ed8; }
+.badge-yellow { background: #fef3c7; color: #a16207; }
+.badge-purple { background: #f3e8ff; color: #7e22ce; }
+.badge-green { background: #dcfce7; color: #15803d; }
+.type-badge { border-radius: 5px; background: #eff6ff; color: #1d4ed8; }
+.type-purple { background: #faf5ff; color: #7e22ce; }
+.type-pink { background: #fdf2f8; color: #be185d; }
+.icon-button { display: inline-grid; width: 28px; height: 28px; place-items: center; padding: 0; border-color: var(--admin-border); color: #6b7280; }
+.page-link { display: grid; width: 32px; height: 32px; place-items: center; padding: 0; border-radius: 8px !important; color: #6b7280; font-size: 11px; }
